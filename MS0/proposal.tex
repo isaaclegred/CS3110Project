@@ -5,16 +5,135 @@
 %%% End:
 
 \documentclass{article}
-\usepackage[margins=1in]{geometry}
+\usepackage[margin=1in]{geometry}
 \usepackage{amsmath}
 \usepackage{amssymb}
+\usepackage{palatino}
+\usepackage[inline]{enumitem}
+\usepackage{hyperref}
+\usepackage{xcolor}
+
+\author{Arthur Tanjaya (amt333) \and Isaac Legred (inl7)}
+\title{CS 3110 Project}
 
 \begin{document}
-\section{Outline}
 
-\subsection{Goal?}
-\subsection{Implementation?}
-\subsection{Scope?}
+\maketitle
 
+\section{Logistics}
+
+We will meet Tuesdays, Thursdays and Saturdays at 2pm via Zoom.
+
+\section{Proposal}
+
+We aim to build a neural network for .
+
+Predicting time series data
+
+Examples: stock price data, weather data
+
+Summary of the system
+
+Short statement
+
+Key features
+
+Narrative description
+
+\section{Roadmap}
+
+\begin{itemize}
+
+\item[MS1]
+	\begin{itemize}[leftmargin=2cm]
+	
+	\item[Satisfactory]
+		\begin{itemize}
+		\item I/O module should be able to read and write data correctly.
+		\item Data processing module should be able to parse raw data into our OCaml types.
+		\item Be able to differentiate polynomials.
+		\end{itemize}
+
+	\item[Good]
+		\begin{itemize}
+		\item Understand and implement basic algorithmic differentiation, in the context of the data types we've defined.
+		\end{itemize}
+
+	\item[Excellent]
+		\begin{itemize}
+		\item Be able to execute a single update in the training parameters of the neural network.
+		\item Optimize reading and writing so that it's not an execution speed bottleneck.
+		\end{itemize}
+	
+	\end{itemize}
+
+\item[MS2]
+	\begin{itemize}[leftmargin=2cm]
+	
+	\item[Satisfactory]
+		\begin{itemize}
+		\item Have a single layer neural network that works, i.e. we can minimize a multivariate function.
+		\end{itemize}
+
+	\item[Good]
+		\begin{itemize}
+		\item Have a multi-layer neural network that can be trained to accurately predict data following `simple' trends (e.g. like functions a Calc 1 student would know).
+		\end{itemize}
+
+	\item[Excellent]
+		\begin{itemize}
+		\item Be able to do statistical inferences on the parameters of the model, i.e. the machine should we able to output how reliable its model is.
+		\item Have a robust neural network, i.e. one that can still perform accurately even when the data has a lot of noise.
+		\end{itemize}
+	
+	\end{itemize}
+
+\end{itemize}
+
+\section{Implementation}
+
+\subsection{Modules}
+
+\begin{itemize}[leftmargin=4cm]
+
+\item[Training module] Used for training models. The primary function within this module will take in a model (i.e. set of parameters), along with training data, and output a ``better'' model/set of parameters.
+
+\item[I/O module] Used for getting/outputting data from the user. For example, this module will process user commands and parse input from files.
+
+\item[Data processing module] Used for processing data sets, e.g. separating data into training/testing sets.
+
+\item[Math module] Used for any relevant non-trivial computations, e.g. differentiation.
+
+\end{itemize}
+
+\subsection{Data}
+
+\begin{itemize}
+
+\item We plan to use the \texttt{Mat} class from \texttt{Owl} to store our raw data, but this will be wrapped in a more abstract type when passed within the program.
+
+\item For now, we will use text files to store our persistent data (i.e. model parameters). Maybe pass it through \texttt{tar}/\texttt{gzip}. Given that reading the raw parameters is not very insightful, there's no reason to keep this in a human-readable format.
+
+\end{itemize}
+
+\subsection{Third-party libraries}
+
+We will definitely use the \href{https://opam.ocaml.org/packages/owl/}{\texttt{Owl}} package. Note: \texttt{Owl} already has a neural network module, but it is very poorly documented. We plan to implement our project without using that module.
+
+\subsection{Testing}
+
+\begin{itemize}[leftmargin=3cm]
+
+\item[Regression tests] Whenever we find a bug, we'll write a test guarding against that bug, so we'll know when that bug resurfaces.
+
+\item[Unit tests] First, we will unit-test individual functions. For example, we will test the input parsing functions to make sure that they parse data in the expected manner. As another example, we will also test that our differentiation functions are correct, etc.
+
+\item[Module tests] Next, we will test modules/functions that depend on other functions in complicated manners, checking that they do what we want them to do. For example, we will check that the gradient descent algorithm of the neural network can complete a step correctly.
+
+\item[Full run tests] Finally, once everything is in place, we will test the whole system by passing in `simple' (e.g. linear, sine wave) data and checking that it can output accurate predictions.
+
+\end{itemize}
+
+We agree that whenever someone writes a function, he will also write unit tests for that function. Furthermore, by the definition of regression testing, whenever we discover and fix a bug, we'll write a test that guards against it. Finally, accountability is easy: \texttt{\color{red}git blame}
 
 \end{document}
