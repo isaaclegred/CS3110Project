@@ -3,3 +3,7 @@
 *#*
 # Build directories
 *build*
+# latex compiler files
+*.pdf*
+*.aux*
+*.log*
