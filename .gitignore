@@ -8,3 +8,5 @@
 *.aux*
 *.log*
 *auto*
+*.out*
+*.synctex.gz*
