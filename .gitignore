@@ -9,6 +9,7 @@
 *.log*
 *auto*
 *.out*
+
 *.synctex.gz*
 # .DS_Store
 .DS_Store
