@@ -43,12 +43,13 @@ module IO = struct
       
   let unpack_data data_file =
     match data_file with
-    | {path = p; status =f_p;
+    | None -> None
+    | Some {path = p; status =f_p;
        data = Some d; file = c} as f -> let _ = print_endline ("data already extracted") in
       f
-    | {path = p; status =f_p;
+    | Some {path = p; status =f_p;
        data = None; file = c} -> let _ = print_endline ("extracting data") in
-       let mat_data = process_data_into_mats p in  {path = p; status =f_p;
+       let mat_data = process_data_into_mats p in  Some {path = p; status =f_p;
                                                data = mat_data; file = c}
                                                    
   (* Will hold parameters, to be stored/ extracted, updated is used to flag when the
@@ -80,18 +81,20 @@ module IO = struct
   
   let unpack_params params_file =
     match params_file with
-    | {path = p; status =f_p;
+    | None -> None
+    | Some {path = p; status =f_p;
        params = Some d; file = c;
        updated = false} as f -> let _ = print_endline ("params already extracted") in
       f
-    | {path = p; status =f_p;
+    | Some {path = p; status =f_p;
        params = Some d; file = c;
        updated = true} -> let _  = print_endline ("overwriting updated params") in
-      let mat_data = process_params_into_mats p in  {path = p; status =f_p;
-                                                     params = mat_data; file = c; updated=false }
-    | {path = p; status =f_p;
+      let mat_data = process_params_into_mats p in  Some {path = p; status =f_p;
+                                                          params = mat_data; file = c;
+                                                          updated=false }
+    | Some {path = p; status =f_p;
        params = None; file = c; updated=t_f} -> let _ = print_endline ("extracting params") in
-      let mat_data = process_params_into_mats p in  {path = p; status =f_p;
+      let mat_data = process_params_into_mats p in  Some {path = p; status =f_p;
                                                       params = mat_data; file = c; updated=false }
                                                      
   (* This function should unpack the parameters in the matrices and store than in the 
