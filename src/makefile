@@ -12,3 +12,5 @@ default: build
 build:
 	$(OCAMLBUILD) $(OBJECTS)
 
+clean:
+	ocamlbuild -clean
