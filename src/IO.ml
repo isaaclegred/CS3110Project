@@ -52,7 +52,7 @@ module IO = struct
        let mat_data = process_data_into_mats p in  Some {path = p; status =f_p;
                                                data = mat_data; file = c}
                                                    
-  (* Will hold parameters, to be stored/ extracted, updated is used to flag when the
+  (* Will hold parameters, to be stored/ extracted, [updated] is used to flag when the
      parameters that were extracted from this file have been updated so that the user
      can easily see if they need to be rewritten*)
   type param_file = {path : string; status : file_permission;
