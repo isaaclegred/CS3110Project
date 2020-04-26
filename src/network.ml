@@ -20,7 +20,7 @@ let add_layer layer {input_size; output_size; layers} =
   else {input_size; output_size; layers = layer :: layers}
 
 let seal layer pre_network =
-  let {input_size; output_size; layers} = add_layer pre_network layer in
+  let {input_size; output_size; layers} = add_layer layer pre_network in
   let size =
     match layers with
     | [] -> failwith "This is impossible!"
