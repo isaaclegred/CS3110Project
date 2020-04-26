@@ -5,3 +5,4 @@
 #load_rec "IO.cmo"
 #load_rec "layer.cmo"
 #load_rec "learning.cmo"
+#load_rec "network.cmo"
