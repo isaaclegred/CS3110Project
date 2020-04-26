@@ -10,22 +10,22 @@ type net = Layer.t array
 
 let create input_size output_size = {input_size; output_size; layers = []}
 
-let add_layer {input_size; output_size; layers} layer =
+let add_layer layer {input_size; output_size; layers} =
   let size =
     match layers with
     | [] -> input_size
     | h :: t -> Layer.layer_size h in
-  if size <> Layer.input_size layer then
+  if Layer.input_size layer <> size then
     Invalid_argument "Layer has bad input shape" |> raise
   else {input_size; output_size; layers = layer :: layers}
 
-let seal pre_network layer =
+let seal layer pre_network =
   let {input_size; output_size; layers} = add_layer pre_network layer in
   let size =
     match layers with
     | [] -> failwith "This is impossible!"
     | h :: t -> Layer.layer_size h in
-  if output_size <> size then
+  if size <> output_size then
     Invalid_argument "Layer has bad input shape" |> raise
   else layers |> List.rev |> Array.of_list
 

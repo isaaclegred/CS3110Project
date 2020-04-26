@@ -1,4 +1,4 @@
-MODULES=authors IO layer learning network
+MODULES=authors IO layer learning network trainer
 OBJECTS=$(MODULES:=.cmo)
 MLS=$(MODULES:=.ml)
 MLIS=$(MODULES:=.mli)

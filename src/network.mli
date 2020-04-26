@@ -4,9 +4,9 @@ type net
 
 val create : int -> int -> pre_net
 
-val add_layer : pre_net -> Layer.t -> pre_net
+val add_layer : Layer.t -> pre_net -> pre_net
 
-val seal : pre_net -> Layer.t -> net
+val seal : Layer.t -> pre_net -> net
 
 val input_size : net -> int
 

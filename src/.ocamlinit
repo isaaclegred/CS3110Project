@@ -6,3 +6,4 @@
 #load_rec "layer.cmo"
 #load_rec "learning.cmo"
 #load_rec "network.cmo"
+#load_rec "trainer.cmo"
