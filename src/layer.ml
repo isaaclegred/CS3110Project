@@ -37,8 +37,8 @@ let set_activations ({weights; biases; activations} as layer) new_activations =
     Invalid_argument "Bad length" |> raise
   else {weights; biases; activations = List.nth new_activations}
 
-let run input ({weights; biases; activations} as layer) =
-  if M.shape input <> (input_size layer, 1) then
+let run ({weights; biases; activations} as layer) input =
+  if (input_size layer, 1) <> M.shape input then
     Invalid_argument "Bad shape" |> raise
   else M.(weights *@ input + biases |> mapi activations)
 
