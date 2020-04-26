@@ -18,22 +18,32 @@ let layer_size layer = M.row_num layer.weights
 
 let get_weights layer = M.copy layer.weights
 
-let set_weights ({weights; biases; activations} as layer) new_weights =
-  if layer_size layer <> M.row_num new_weights then
+let set_weights new_weights ({weights; biases; activations} as layer) =
+  if M.row_num new_weights <> layer_size layer then
     Invalid_argument "Bad shape" |> raise
   else {weights = M.copy new_weights; biases; activations}
 
+let incr_weights new_weights ({weights; biases; activations} as layer) =
+  if M.row_num new_weights <> layer_size layer then
+    Invalid_argument "Bad shape" |> raise
+  else {weights = M.(weights + new_weights); biases; activations}
+
 let get_biases layer = M.copy layer.biases
 
-let set_biases {weights; biases; activations} new_biases =
-  if M.shape biases <> M.shape new_biases then
+let set_biases new_biases {weights; biases; activations} =
+  if M.shape new_biases <> M.shape biases then
     Invalid_argument "Bad shape" |> raise
   else {weights; biases = M.copy new_biases; activations}
 
+let incr_biases new_biases {weights; biases; activations} =
+  if M.shape new_biases <> M.shape biases then
+    Invalid_argument "Bad shape" |> raise
+  else {weights; biases = M.(biases + new_biases); activations}
+
 let get_activations layer = List.init (layer_size layer) layer.activations
 
-let set_activations ({weights; biases; activations} as layer) new_activations =
-  if layer_size layer <> List.length new_activations then
+let set_activations new_activations ({weights; biases; activations} as layer) =
+  if List.length new_activations <> layer_size layer then
     Invalid_argument "Bad length" |> raise
   else {weights; biases; activations = List.nth new_activations}
 

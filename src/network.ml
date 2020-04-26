@@ -39,6 +39,16 @@ let run network inputs =
   |> (fun mat -> Array.fold_left Layer.run mat network)
   |> M.to_array
 
+let prop f g weights biases network =
+  let size = Array.length network in
+  if Array.length weights <> size || Array.length biases <> size then
+    Invalid_argument "Invalid sizes" |> raise
+  else Array.mapi (fun i x -> x |> f weights.(i) |> g biases.(i)) network
+
+let update = prop Layer.set_weights Layer.set_biases
+
+let incr = prop Layer.incr_weights Layer.incr_biases
+
 let to_string network = failwith "Unimplemented" (* TODO *)
 
 let from_string data = failwith "Unimplemented" (* TODO *)

@@ -8,15 +8,19 @@ val layer_size : t -> int
 
 val get_weights : t -> Owl.Mat.mat
 
-val set_weights : t -> Owl.Mat.mat -> t
+val set_weights : Owl.Mat.mat -> t -> t
+
+val incr_weights : Owl.Mat.mat -> t -> t
 
 val get_biases : t -> Owl.Mat.mat
 
-val set_biases : t -> Owl.Mat.mat -> t
+val set_biases : Owl.Mat.mat -> t -> t
+
+val incr_biases : Owl.Mat.mat -> t -> t
 
 val get_activations : t -> (float -> float) list
 
-val set_activations : t -> (float -> float) list -> t
+val set_activations : (float -> float) list -> t -> t
 
 val run : Owl.Mat.mat -> t -> Owl.Mat.mat
 
