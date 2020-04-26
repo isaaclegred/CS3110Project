@@ -48,3 +48,9 @@ let from_string data = failwith "Unimplemented" (* TODO *)
 
 let copy {weights; biases; activations} =
   {weights = M.copy weights; biases = M.copy biases; activations}
+
+let print {weights; biases; activations} =
+  print_endline "Weights:";
+  M.print weights;
+  print_endline "Biases:";
+  M.print biases

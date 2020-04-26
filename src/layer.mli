@@ -25,3 +25,5 @@ val to_string : t -> string
 val from_string : string -> t
 
 val copy : t -> t
+
+val print : t -> unit

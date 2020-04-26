@@ -16,7 +16,10 @@ module type Network = sig
   val run : net -> D.t list -> D.t list
   val to_string : net -> string
   val from_string : string -> net
-  val copy : net -> net
+  val copy_pre_net : pre_net -> pre_net
+  val copy_net : net -> net
+  val print_pre_net : pre_net -> unit
+  val print_net : net -> unit
 end
 
 module Make (D : Data) = struct
@@ -72,6 +75,17 @@ module Make (D : Data) = struct
 
   let from_string data = failwith "Unimplemented" (* TODO *)
 
-  let copy = Array.map Layer.copy
+  let copy_pre_net {input_size; output_size; layers} =
+    {input_size; output_size; layers = List.map Layer.copy layers}
+
+  let copy_net = Array.map Layer.copy
+
+  let print_pre_net {input_size; output_size; layers} =
+    print_string "Input size: "; print_int input_size;
+    print_string "Output size: "; print_int output_size;
+    print_endline "Layers:";
+    List.iter Layer.print layers
+
+  let print_net = Array.iter Layer.print
 
 end

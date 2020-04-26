@@ -28,7 +28,13 @@ module type Network = sig
 
   val from_string : string -> net
 
-  val copy : net -> net
+  val copy_pre_net : pre_net -> pre_net
+
+  val copy_net : net -> net
+
+  val print_pre_net : pre_net -> unit
+
+  val print_net : net -> unit
 
 end
 
