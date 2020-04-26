@@ -6,52 +6,72 @@ end
 
 module type Network = sig
   module D : Data
-  type t
-  val create : int -> int -> t
-  val input_size : t -> int
-  val layer_size : t -> int
-  val get_weights : t -> Owl.Mat.mat
-  val set_weights : t -> Owl.Mat.mat -> t
-  val get_biases : t -> Owl.Mat.mat
-  val set_biases : t -> Owl.Mat.mat -> t
-  val get_activations : t -> (float -> float) list
-  val set_activations : t -> (float -> float) list -> t
-  val run : t -> Owl.Mat.mat -> Owl.Mat.mat
-  val to_string : t -> string
-  val from_string : string -> t
-  val copy : t -> t
+  type pre_net
+  type net
+  val create : int -> int -> pre_net
+  val add_layer : pre_net -> Layer.t -> pre_net
+  val seal : pre_net -> Layer.t -> net
+  val input_size : net -> int
+  val output_size : net -> int
+  val run : net -> D.t list -> D.t list
+  val to_string : net -> string
+  val from_string : string -> net
+  val copy : net -> net
 end
 
 module Make (D : Data) = struct
 
+  module M = Owl.Mat
+
   module D = D
 
-  type t = unit
+  type pre_net = {
+    input_size : int;
+    output_size : int;
+    layers : Layer.t list;
+  }
 
-  let create in_size out_size = failwith "Unimplemented"
+  type net = Layer.t array
 
-  let input_size network = failwith "Unimplemented"
+  let create input_size output_size = {input_size; output_size; layers = []}
 
-  let layer_size network = failwith "Unimplemented"
+  let add_layer {input_size; output_size; layers} layer =
+    let size =
+      match layers with
+      | [] -> input_size
+      | h :: t -> Layer.layer_size h in
+    if size <> Layer.input_size layer then
+      Invalid_argument "Layer has bad input shape" |> raise
+    else {input_size; output_size; layers = layer :: layers}
 
-  let get_weights network = failwith "Unimplemented"
+  let seal pre_network layer =
+    let {input_size; output_size; layers} = add_layer pre_network layer in
+    let size =
+      match layers with
+      | [] -> failwith "This is impossible!"
+      | h :: t -> Layer.layer_size h in
+    if output_size <> size then
+      Invalid_argument "Layer has bad input shape" |> raise
+    else layers |> List.rev |> Array.of_list
 
-  let set_weights network weights = failwith "Unimplemented"
+  let input_size network = Layer.input_size network.(0)
 
-  let get_biases network = failwith "Unimplemented"
+  let output_size network = Layer.layer_size network.(Array.length network - 1)
 
-  let set_biases network biases = failwith "Unimplemented"
+  let run network inputs =
+    inputs
+    |> Array.of_list
+    |> Array.map D.to_float
+    |> (fun arr -> M.of_array arr (Array.length arr) 1)
+    |> (fun mat -> Array.fold_left Layer.run mat network)
+    |> M.to_array
+    |> Array.map D.from_float
+    |> Array.to_list
 
-  let get_activations network = failwith "Unimplemented"
+  let to_string network = failwith "Unimplemented" (* TODO *)
 
-  let set_activations network acts = failwith "Unimplemented"
+  let from_string data = failwith "Unimplemented" (* TODO *)
 
-  let run network inputs = failwith "Unimplemented"
-
-  let to_string network = failwith "Unimplemented"
-
-  let from_string data = failwith "Unimplemented"
-
-  let copy network = failwith "Unimplemented"
+  let copy = Array.map Layer.copy
 
 end

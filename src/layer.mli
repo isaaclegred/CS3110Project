@@ -18,7 +18,7 @@ val get_activations : t -> (float -> float) list
 
 val set_activations : t -> (float -> float) list -> t
 
-val run : t -> Owl.Mat.mat -> Owl.Mat.mat
+val run : Owl.Mat.mat -> t -> Owl.Mat.mat
 
 val to_string : t -> string
 

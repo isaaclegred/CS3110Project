@@ -8,33 +8,27 @@ module type Network = sig
 
   module D : Data
 
-  type t
+  type pre_net
 
-  val create : int -> int -> t
+  type net
 
-  val input_size : t -> int
+  val create : int -> int -> pre_net
 
-  val layer_size : t -> int
+  val add_layer : pre_net -> Layer.t -> pre_net
 
-  val get_weights : t -> Owl.Mat.mat
+  val seal : pre_net -> Layer.t -> net
 
-  val set_weights : t -> Owl.Mat.mat -> t
+  val input_size : net -> int
 
-  val get_biases : t -> Owl.Mat.mat
+  val output_size : net -> int
 
-  val set_biases : t -> Owl.Mat.mat -> t
+  val run : net -> D.t list -> D.t list
 
-  val get_activations : t -> (float -> float) list
+  val to_string : net -> string
 
-  val set_activations : t -> (float -> float) list -> t
+  val from_string : string -> net
 
-  val run : t -> Owl.Mat.mat -> Owl.Mat.mat
-
-  val to_string : t -> string
-
-  val from_string : string -> t
-
-  val copy : t -> t
+  val copy : net -> net
 
 end
 
