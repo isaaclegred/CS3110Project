@@ -35,10 +35,11 @@ module Make (In : Data) (Out : Data) (D : Derivative) = struct
       {input; output; network}
 
   let update {input; output; network} =
+    let f = learning_rate |> M.($*) |> Array.map in
     let layers = Network.net_layers network in
     let weights = Array.map Layer.get_weights layers in
     let biases = Array.map Layer.get_biases layers in
-    let delta = D.eval weights biases in
+    let delta = D.eval weights biases |> fun (x, y) -> (f x, f y) in
     {input; output; network = Network.decr (fst delta) (snd delta) network}
 
   let train {input; output; network} = failwith "Unimplemented"
