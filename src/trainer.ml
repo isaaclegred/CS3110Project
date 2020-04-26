@@ -1,3 +1,7 @@
+let cost expected actual =
+  let to_mat arr = Owl.Mat.of_array arr (Array.length arr) 1 in
+  Owl.Mat.((to_mat expected) - (to_mat actual) |> sqr |> sum')
+
 module type Data = sig
   type t
   val size : int

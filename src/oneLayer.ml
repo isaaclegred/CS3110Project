@@ -22,18 +22,17 @@ module Make (In : Data) (Out : Data) (D : Derivative) = struct
       (List.init Out.size (fun _ -> Owl.Maths.sigmoid))
 
   let create ins outs =
-    let input = Array.map In.to_float_array ins in
-    let output = Array.map Out.to_float_array outs in
-    let network =
-      Network.(
-        create In.size Out.size
-        |> seal layer
-      ) in
-    {input; output; network}
-
-  let cost expected actual =
-    let to_mat arr = M.of_array arr (Array.length arr) 1 in
-    M.((to_mat expected) - (to_mat actual) |> sqr |> sum')
+    if Array.length ins <> Array.length outs then
+      Invalid_argument "Inputs and outputs must be the same length" |> raise
+    else
+      let input = Array.map In.to_float_array ins in
+      let output = Array.map Out.to_float_array outs in
+      let network =
+        Network.(
+          create In.size Out.size
+          |> seal layer
+        ) in
+      {input; output; network}
 
   let update {input; output; network} =
     let layers = Network.net_layers network in

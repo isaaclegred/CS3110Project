@@ -1,3 +1,6 @@
+(* For now, this is just $\chi^2$. *)
+val cost : float array -> float array -> float
+
 module type Data = sig
   type t
   val size : int
