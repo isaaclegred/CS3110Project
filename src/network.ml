@@ -49,6 +49,8 @@ let update = prop Layer.set_weights Layer.set_biases
 
 let incr = prop Layer.incr_weights Layer.incr_biases
 
+let decr = prop Layer.decr_weights Layer.decr_biases
+
 let to_string network = failwith "Unimplemented" (* TODO *)
 
 let from_string data = failwith "Unimplemented" (* TODO *)

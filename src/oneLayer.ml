@@ -39,7 +39,7 @@ module Make (In : Data) (Out : Data) (D : Derivative) = struct
     let weights = Array.map Layer.get_weights layers in
     let biases = Array.map Layer.get_biases layers in
     let delta = D.eval weights biases in
-    {input; output; network = Network.incr (fst delta) (snd delta) network}
+    {input; output; network = Network.decr (fst delta) (snd delta) network}
 
   let train {input; output; network} = failwith "Unimplemented"
 

@@ -18,6 +18,8 @@ val update : Owl.Mat.mat array -> Owl.Mat.mat array -> net -> net
 
 val incr : Owl.Mat.mat array -> Owl.Mat.mat array -> net -> net
 
+val decr : Owl.Mat.mat array -> Owl.Mat.mat array -> net -> net
+
 val to_string : net -> string
 
 val from_string : string -> net

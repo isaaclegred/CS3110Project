@@ -12,11 +12,15 @@ val set_weights : Owl.Mat.mat -> t -> t
 
 val incr_weights : Owl.Mat.mat -> t -> t
 
+val decr_weights : Owl.Mat.mat -> t -> t
+
 val get_biases : t -> Owl.Mat.mat
 
 val set_biases : Owl.Mat.mat -> t -> t
 
 val incr_biases : Owl.Mat.mat -> t -> t
+
+val decr_biases : Owl.Mat.mat -> t -> t
 
 val get_activations : t -> (float -> float) list
 
