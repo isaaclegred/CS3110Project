@@ -1,6 +1,7 @@
 open Trainer
 
-module Make (In : Data) (Out : Data) (D : Derivative) = struct
+module Make (In : Data) (Out : Data)
+    (D : Derivative with module In = In and module Out = Out) = struct
 
   module M = Owl.Mat
   module In = In
@@ -12,8 +13,9 @@ module Make (In : Data) (Out : Data) (D : Derivative) = struct
     output : M.mat;
     network : Network.net;
     deriv :
-      Owl.Mat.mat array -> Owl.Mat.mat array ->
-      Owl.Mat.mat array * Owl.Mat.mat array
+      Network.net ->
+      M.mat array -> M.mat array ->
+      M.mat array * M.mat array
   }
 
   let learning_rate = 0.03 (* Arbitrarily chosen *)
@@ -35,14 +37,14 @@ module Make (In : Data) (Out : Data) (D : Derivative) = struct
           create In.size Out.size
           |> seal layer
         ) in
-      {input; output; network; deriv = D.eval input output}
+      {input; output; network; deriv = D.eval ins outs}
 
   let update {input; output; network; deriv} =
     let f = learning_rate |> M.($*) |> Array.map in
     let layers = network |> Network.net_layers in
     let ws = layers |> Array.map Layer.get_weights in
     let bs = layers |> Array.map Layer.get_biases in
-    let weights, biases = deriv ws bs |> fun (x, y) -> (f x, f y) in
+    let weights, biases = deriv network ws bs |> fun (x, y) -> (f x, f y) in
     {input; output; network = Network.decr weights biases network; deriv}
 
   let train {input; output; network; deriv} = failwith "Unimplemented"

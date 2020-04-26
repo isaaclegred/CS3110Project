@@ -9,8 +9,11 @@ module type Data = sig
 end
 
 module type Derivative = sig
+  module In : Data
+  module Out : Data
   val eval :
-    Owl.Mat.mat -> Owl.Mat.mat ->
+    In.t array -> Out.t array ->
+    Network.net ->
     Owl.Mat.mat array -> Owl.Mat.mat array ->
     Owl.Mat.mat array * Owl.Mat.mat array
 end
@@ -27,6 +30,11 @@ module type Trainer = sig
   val get_network : t -> Network.net
 end
 
+module type DerivativeMaker =
+  functor (In : Data) -> functor (Out : Data) ->
+    Derivative with module In = In and module Out = Out
+
 module type TrainerMaker =
-  functor (In : Data) -> functor (Out : Data) -> functor (D : Derivative) ->
-    Trainer with module In = In and module Out = Out and module D = D
+  functor (In : Data) -> functor (Out : Data) ->
+    functor (D : Derivative with module In = In and module Out = Out) ->
+      Trainer with module In = In and module Out = Out and module D = D
