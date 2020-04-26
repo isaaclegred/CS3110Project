@@ -1,84 +1,97 @@
-open IO
-
-module Mat = Owl.Mat
-
-type learning_metadata = {
-  minimum : float;
-  jacobian : Mat.mat;
-}
+module M = Owl.Mat
 
 let construct_fun_from_params params input =
-  Mat.(fst params *@ input + snd params)
+  M.(fst params *@ input + snd params)
 
 let construct_cost data params =
   let f = construct_fun_from_params params in
-  let residuals = Mat.(f (fst data) - snd data) in
-  Mat.(residuals |> sqr |> sum')
+  let residuals = M.(f (fst data) - snd data) in
+  M.(residuals |> sqr |> sum')
 
 (* Returns an r x s matrix: derivative of cost w.r.t. weights.
    [data] is (seen data (r, 1), unseen data (s, 1)).
    [params] is (weights (r x s), biases (1 x s)). *)
 let construct_weight_deriv data params =
   let f = construct_fun_from_params params in
-  let residuals = Mat.(f (fst data) - snd data) in
-  Mat.(2. $* transpose residuals * fst data)
+  let residuals = M.(f (fst data) - snd data) in
+  M.(2. $* transpose residuals * fst data)
 
 (* Returns a 1 x s matrix: derivative of cost w.r.t. biases.
    [data] is (seen data (r, 1), unseen data (s, 1)).
    [params] is (weights (r x s), biases (1 x s)). *)
 let construct_bias_deriv data params =
   let f = construct_fun_from_params params in
-  let residuals = Mat.(f (fst data) - snd data) in
-  Mat.(2. $* transpose residuals)
+  let residuals = M.(f (fst data) - snd data) in
+  M.(2. $* transpose residuals)
 
-(* NEW STUFF: Example of how to use the Trainer module, specifically the
-   OneLayer implementation. The network in OneLayer is a single layer network
-   with one neuron per output (dependent) variable. The weights are initialized
-   uniformly at random, and the biases are initialized to zero.
+(* Example of how to use the Trainer module, specifically the OneLayer
+   implementation. The network in OneLayer is a single layer network with one
+   neuron per output (dependent) variable. The weights are initialized
+   uniformly at random, and the biases are initialized to zero. *)
 
-   TODO: Please help fill in the derivative, I need to go to sleep. There may
-   be bugs, if so I will try to fix them when I wake up. *)
-
-module In = struct
-  type t = float array
-  let size = 1 (* Number of independent variables *)
-  let to_float_array x = x
-end
-
-module Out = struct
-  type t = float array
-  let size = 1 (* Number of dependent variables *)
-  let to_float_array x = x
-end
-
-module Derivative (In: Trainer.Data) (Out: Trainer.Data) :
+module OneLayerDerivative (In: Trainer.Data) (Out: Trainer.Data) :
   Trainer.Derivative with module In = In and module Out = Out = struct
 
   module In = In
   module Out = Out
 
-  (* If it's easier to work with the derivative when the array of [Mat]s is
-     flattened, then you can use this. *)
-  let flatten mat_arr = failwith "Unimplemented"
+  let convert inputs outputs weight bias =
+    let number_of_points = M.col_num inputs in
+    let valid =
+      number_of_points = M.col_num outputs
+      && M.shape weight = (M.row_num bias, M.row_num inputs) in
+    if not valid then Invalid_argument "Invalid sizes/lengths" |> raise
+    else
+      let make f = Array.init number_of_points f in
+      let data = make (fun i -> M.col inputs i, M.col outputs i) in
+      make (fun i -> data.(i), (M.copy weight, M.copy bias))
 
   (* [inputs] is independent data; [outputs] is dependent data.
      [weights] and [biases] are the weights and biases
      of the layers present, in order.
      [network] is the current network.
-     Output should be the derivative at each coordinate, in the same order. *)
-  let eval inputs outputs network weights biases = weights, biases (* TODO *)
+     Output should be the derivative at each coordinate, in the same order.
+
+     Requires: [weights] and [biases] have length [1]. *)
+  let eval inputs outputs network weights biases =
+    let data = convert inputs outputs weights.(0) biases.(0) in
+    let apply f = Array.map (fun (x, y) -> f x y |> M.transpose) data in
+    let wd = apply construct_weight_deriv in
+    let bd = apply construct_bias_deriv in
+    let mean mats =
+      let r, c = M.shape mats.(0) in
+      let ans = [| M.zeros r c |] in
+      Array.iter (fun mat -> ans.(0) <- M.(ans.(0) + mat)) mats;
+      ans.(0) <- M.(ans.(0) /$ (mats |> Array.length |> Float.of_int));
+      ans in
+    mean wd, mean bd
 
 end
 
-module T = OneLayer.Make(In)(Out)(Derivative(In)(Out))
+let run_test count input_size output_size max_multiplier =
 
-let run_test count input_size total_size max_multiplier =
+  let module In = struct
+    type t = float array
+    let size = input_size (* Number of independent variables *)
+    let to_float_array x = x
+  end
+  in
 
-  (* Create an array of length [total_size], with entries of the form [at^2],
+  let module Out = struct
+    type t = float array
+    let size = output_size (* Number of dependent variables *)
+    let to_float_array x = x
+  end
+  in
+
+  let module T = OneLayer.Make(In)(Out)(OneLayerDerivative(In)(Out))
+  in
+
+  (* Create an array of length [In.size + Out.size], whose entries are [at^2],
      where [t] is the index in the array and [a] is a random fixed float. *)
   let rnd_seq _ =
     let a = Random.float max_multiplier in
-    Array.init total_size (fun t -> a *. Float.of_int t ** 2.)
+    Array.init (In.size + Out.size) (fun t -> a *. Float.of_int t ** 2.)
   in
 
   let split n arr =
@@ -88,9 +101,9 @@ let run_test count input_size total_size max_multiplier =
   in
 
   (* Create an array of length [count], whose entries are tuples [(x, y)] of
-     arrays, [x] of length [input_size] and [y] of length
-     [total_size - input_size], such that [append x y] follows an easy trend. *)
-  let time_series = Array.init count rnd_seq |> Array.map (split input_size)
+     arrays, [x] of length [In.size] and [y] of length [Out.size], such that
+     [append x y] follows an easy trend. *)
+  let time_series = Array.init count rnd_seq |> Array.map (split In.size)
   in
 
   let unzip arr = Array.map fst arr, Array.map snd arr
@@ -103,11 +116,19 @@ let run_test count input_size total_size max_multiplier =
   in
 
   for i = 0 to 99 do
-    !one_layer_trainer |> T.get_network |> Network.print_net;
+    print_string "Iteration number "; print_int i; print_endline "\n";
+    print_string "Loss: ";
+    input_data
+    |> Array.map (!one_layer_trainer |> T.get_network |> Network.run)
+    |> Array.map2 Trainer.cost output_data
+    |> Array.fold_left (-.) 0.
+    |> print_float;
+    print_endline "\n";
+    (* !one_layer_trainer |> T.get_network |> Network.print_net; *)
     one_layer_trainer := !one_layer_trainer |> T.update
   done;
   !one_layer_trainer |> T.get_network |> Network.print_net
 
 (* [Mat.print] DOES NOT FLUSH PROPERLY SO EVERYTHING'S JUMBLED UP IN UTOP *)
 
-let () = run_test 10 90 100 1000.
+let () = run_test 1 9 1 1.

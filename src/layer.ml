@@ -63,6 +63,6 @@ let copy {weights; biases; activations} =
 
 let print {weights; biases; activations} =
   print_endline "Weights:";
-  M.print weights;
+  M.print weights |> print_newline;
   print_endline "Biases:";
-  M.print biases
+  M.print biases |> print_newline

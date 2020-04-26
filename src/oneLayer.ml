@@ -22,7 +22,7 @@ module Make (In : Data) (Out : Data)
 
   let layer =
     Layer.create
-      (M.uniform In.size Out.size)
+      (M.uniform Out.size In.size)
       (M.zeros Out.size 1)
       (List.init Out.size (fun _ -> Owl.Maths.sigmoid))
 
@@ -30,14 +30,15 @@ module Make (In : Data) (Out : Data)
     if Array.length ins <> Array.length outs then
       Invalid_argument "Inputs and outputs must be the same length" |> raise
     else
-      let input = ins |> Array.map In.to_float_array |> M.of_arrays in
-      let output = outs |> Array.map Out.to_float_array |> M.of_arrays in
+      let to_mat arrs = arrs |> M.of_arrays |> M.transpose in
+      let input = ins |> Array.map In.to_float_array |> to_mat in
+      let output = outs |> Array.map Out.to_float_array |> to_mat in
       let network =
         Network.(
           create In.size Out.size
           |> seal layer
         ) in
-      {input; output; network; deriv = D.eval ins outs}
+      {input; output; network; deriv = D.eval input output}
 
   let update {input; output; network; deriv} =
     let f = learning_rate |> M.($*) |> Array.map in

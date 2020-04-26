@@ -12,7 +12,7 @@ module type Derivative = sig
   module In : Data
   module Out : Data
   val eval :
-    In.t array -> Out.t array ->
+    Owl.Mat.mat -> Owl.Mat.mat ->
     Network.net ->
     Owl.Mat.mat array -> Owl.Mat.mat array ->
     Owl.Mat.mat array * Owl.Mat.mat array
