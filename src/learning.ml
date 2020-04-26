@@ -18,15 +18,15 @@ let construct_cost data params =
 let construct_weight_deriv data params =
   let f = construct_fun_from_params params in
   let residuals = Mat.(f (fst data) - snd data) in
-  Mat.( 2.0 $* transpose (residuals) * (fst data))
+  Mat.(2.0 $* transpose residuals * fst data)
 
 let construct_bias_deriv data params =
   let f = construct_fun_from_params params in
   let residuals = Mat.(f (fst data) - snd data) in
-  Mat.(2.0 $* transpose (residuals))
+  Mat.(2.0 $* transpose residuals)
 
 let learn data params = (params, Some {minimum = 0.; jacobian = Mat.zeros 2 2})
-                        
+
 (* NEW STUFF: Example of how to use the Trainer module, specifically the
    OneLayer implementation. The network in OneLayer is a single layer network
    with one neuron per output (dependent) variable. The weights are initialized
@@ -47,7 +47,11 @@ module Out = struct
   let to_float_array x = x
 end
 
-module Derivative : Trainer.Derivative = struct
+module Derivative (In: Trainer.Data) (Out: Trainer.Data) :
+  Trainer.Derivative with module In = In and module Out = Out = struct
+
+  module In = In
+  module Out = Out
 
   (* If it's easier to work with the derivative when the array of [Mat]s is
      flattened, then you can use this. *)
@@ -56,13 +60,13 @@ module Derivative : Trainer.Derivative = struct
   (* [inputs] is independent data; [outputs] is dependent data.
      [weights] and [biases] are the weights and biases
      of the layers present, in order.
-     Output should be the derivative at each coordinate, in the same order.
-     There is a $\chi^2$ cost function at [Trainer.cost], if needed. *)
-  let eval inputs outputs weights biases = (weights, biases) (* TODO *)
+     [network] is the current network.
+     Output should be the derivative at each coordinate, in the same order. *)
+  let eval inputs outputs network weights biases = (weights, biases) (* TODO *)
 
 end
 
-module T = OneLayer.Make(In)(Out)(Derivative)
+module T = OneLayer.Make(In)(Out)(Derivative(In)(Out))
 
 let input_data = [| [|0.0|]; [|1.0|]; [|2.0|] |]
 
