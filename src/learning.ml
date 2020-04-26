@@ -66,3 +66,5 @@ let () =
     one_layer_trainer := !one_layer_trainer |> T.update
   done;
   !one_layer_trainer |> T.get_network |> Network.print_net
+
+(* [Mat.print] DOES NOT FLUSH PROPERLY SO EVERYTHING'S JUMBLED UP IN UTOP *)
