@@ -33,11 +33,14 @@ module Make (In : Data) (Out : Data) (D : Derivative) = struct
 
   let cost expected actual =
     let to_mat arr = M.of_array arr (Array.length arr) 1 in
-    let expected = expected |> Out.to_float_array |> to_mat in
-    let actual = actual |> to_mat in
-    M.(expected - actual |> sqr |> sum')
+    M.((to_mat expected) - (to_mat actual) |> sqr |> sum')
 
-  let update {input; output; network} = failwith "Unimplemented"
+  let update {input; output; network} =
+    let layers = Network.net_layers network in
+    let weights = Array.map Layer.get_weights layers in
+    let biases = Array.map Layer.get_biases layers in
+    let delta = D.eval weights biases in
+    {input; output; network = Network.incr (fst delta) (snd delta) network}
 
   let train {input; output; network} = failwith "Unimplemented"
 

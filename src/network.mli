@@ -22,6 +22,11 @@ val to_string : net -> string
 
 val from_string : string -> net
 
+val pre_net_layers : pre_net -> Layer.t array
+
+(* The layers returned are views. Be careful about direct modifications. *)
+val net_layers : net -> Layer.t array
+
 val copy_pre_net : pre_net -> pre_net
 
 val copy_net : net -> net

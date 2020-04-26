@@ -6,7 +6,8 @@ end
 
 module type Derivative = sig
   val eval :
-    (Owl.Mat.mat * Owl.Mat.mat) array -> (Owl.Mat.mat * Owl.Mat.mat) array
+    Owl.Mat.mat array -> Owl.Mat.mat array ->
+    Owl.Mat.mat array * Owl.Mat.mat array
 end
 
 module type Trainer = sig

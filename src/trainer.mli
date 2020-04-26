@@ -5,10 +5,11 @@ module type Data = sig
 end
 
 module type Derivative = sig
-  (* Input is an array of (weights, biases) pairs of the layers present.
-     Output should be the derivative in the same order. *)
+  (* Inputs are the weights and biases of the layers present, in order.
+     Output should be the derivative at each coordinate, in the same order. *)
   val eval :
-    (Owl.Mat.mat * Owl.Mat.mat) array -> (Owl.Mat.mat * Owl.Mat.mat) array
+    Owl.Mat.mat array -> Owl.Mat.mat array ->
+    Owl.Mat.mat array * Owl.Mat.mat array
 end
 
 module type Trainer = sig

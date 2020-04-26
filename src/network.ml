@@ -53,6 +53,11 @@ let to_string network = failwith "Unimplemented" (* TODO *)
 
 let from_string data = failwith "Unimplemented" (* TODO *)
 
+let pre_net_layers {input_size; output_size; layers} =
+  layers |> List.rev |> Array.of_list
+
+let net_layers = Array.copy
+
 let copy_pre_net {input_size; output_size; layers} =
   {input_size; output_size; layers = List.map Layer.copy layers}
 
