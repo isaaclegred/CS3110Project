@@ -8,9 +8,8 @@ module type Data = sig
 end
 
 module type Derivative = sig
-  (* Inputs are the weights and biases of the layers present, in order.
-     Output should be the derivative at each coordinate, in the same order. *)
   val eval :
+    Owl.Mat.mat -> Owl.Mat.mat ->
     Owl.Mat.mat array -> Owl.Mat.mat array ->
     Owl.Mat.mat array * Owl.Mat.mat array
 end

@@ -8,9 +8,12 @@ module Make (In : Data) (Out : Data) (D : Derivative) = struct
   module D = D
 
   type t = {
-    input : float array array;
-    output : float array array;
+    input : M.mat;
+    output : M.mat;
     network : Network.net;
+    deriv :
+      Owl.Mat.mat array -> Owl.Mat.mat array ->
+      Owl.Mat.mat array * Owl.Mat.mat array
   }
 
   let learning_rate = 0.03 (* Arbitrarily chosen *)
@@ -25,25 +28,25 @@ module Make (In : Data) (Out : Data) (D : Derivative) = struct
     if Array.length ins <> Array.length outs then
       Invalid_argument "Inputs and outputs must be the same length" |> raise
     else
-      let input = Array.map In.to_float_array ins in
-      let output = Array.map Out.to_float_array outs in
+      let input = ins |> Array.map In.to_float_array |> M.of_arrays in
+      let output = outs |> Array.map Out.to_float_array |> M.of_arrays in
       let network =
         Network.(
           create In.size Out.size
           |> seal layer
         ) in
-      {input; output; network}
+      {input; output; network; deriv = D.eval input output}
 
-  let update {input; output; network} =
+  let update {input; output; network; deriv} =
     let f = learning_rate |> M.($*) |> Array.map in
-    let layers = Network.net_layers network in
-    let weights = Array.map Layer.get_weights layers in
-    let biases = Array.map Layer.get_biases layers in
-    let delta = D.eval weights biases |> fun (x, y) -> (f x, f y) in
-    {input; output; network = Network.decr (fst delta) (snd delta) network}
+    let layers = network |> Network.net_layers in
+    let ws = layers |> Array.map Layer.get_weights in
+    let bs = layers |> Array.map Layer.get_biases in
+    let weights, biases = deriv ws bs |> fun (x, y) -> (f x, f y) in
+    {input; output; network = Network.decr weights biases network; deriv}
 
-  let train {input; output; network} = failwith "Unimplemented"
+  let train {input; output; network; deriv} = failwith "Unimplemented"
 
-  let get_network {input; output; network} = network
+  let get_network {input; output; network; deriv} = network
 
 end

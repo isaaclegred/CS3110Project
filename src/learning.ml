@@ -45,10 +45,12 @@ module Derivative : Trainer.Derivative = struct
      flattened, then you can use this. *)
   let flatten mat_arr = failwith "Unimplemented"
 
-  (* Inputs are the weights and biases of the layers present, in order.
+  (* [inputs] is independent data; [outputs] is dependent data.
+     [weights] and [biases] are the weights and biases
+     of the layers present, in order.
      Output should be the derivative at each coordinate, in the same order.
      There is a $\chi^2$ cost function at [Trainer.cost], if needed. *)
-  let eval weights biases = (weights, biases) (* TODO *)
+  let eval inputs outputs weights biases = (weights, biases) (* TODO *)
 
 end
 
