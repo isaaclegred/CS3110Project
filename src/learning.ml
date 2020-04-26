@@ -15,10 +15,18 @@ let construct_cost data params =
   let residuals = Mat.(f (fst data) - snd data) in
   Mat.(residuals |> sqr |> sum')
 
-let construct_deriv data params = Mat.(fst data @= Mat.ones 1 1)
+let construct_weight_deriv data params =
+  let f = construct_fun_from_params params in
+  let residuals = Mat.(f (fst data) - snd data) in
+  Mat.( 2.0 $* transpose (residuals) * (fst data))
+
+let construct_bias_deriv data params =
+  let f = construct_fun_from_params params in
+  let residuals = Mat.(f (fst data) - snd data) in
+  Mat.(2.0 $* transpose (residuals))
 
 let learn data params = (params, Some {minimum = 0.; jacobian = Mat.zeros 2 2})
-
+                        
 (* NEW STUFF: Example of how to use the Trainer module, specifically the
    OneLayer implementation. The network in OneLayer is a single layer network
    with one neuron per output (dependent) variable. The weights are initialized
