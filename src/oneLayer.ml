@@ -44,7 +44,7 @@ module Make (In : Data) (Out : Data)
     let layers = network |> Network.net_layers in
     let ws = layers |> Array.map Layer.get_weights in
     let bs = layers |> Array.map Layer.get_biases in
-    let weights, biases = deriv network ws bs |> fun (x, y) -> (f x, f y) in
+    let weights, biases = deriv network ws bs |> fun (x, y) -> f x, f y in
     {input; output; network = Network.decr weights biases network; deriv}
 
   let train {input; output; network; deriv} = failwith "Unimplemented"

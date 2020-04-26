@@ -22,7 +22,12 @@ val construct_cost :
   IO.weights * IO.biases ->
   float
 
-val construct_deriv :
+val construct_weight_deriv :
+  IO.independent_data * IO.dependent_data ->
+  IO.weights * IO.biases ->
+  IO.Mat.mat
+
+val construct_bias_deriv :
   IO.independent_data * IO.dependent_data ->
   IO.weights * IO.biases ->
   IO.Mat.mat
