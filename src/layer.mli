@@ -14,9 +14,9 @@ val get_biases : t -> Owl.Mat.mat
 
 val set_biases : t -> Owl.Mat.mat -> t
 
-val get_activation : t -> (float -> float) list
+val get_activations : t -> (float -> float) list
 
-val set_activation : t -> (float -> float) list -> t
+val set_activations : t -> (float -> float) list -> t
 
 val run : Owl.Mat.mat -> t -> Owl.Mat.mat
 
