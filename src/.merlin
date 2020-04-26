@@ -2,6 +2,3 @@ B _build
 PKG Csv
 PKG oUnit
 PKG Owl
-PKG IO
-PKG Layer
-PKG Learning
