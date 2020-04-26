@@ -1,41 +1,27 @@
-module type Data = sig
-  type t
-  val to_float : t -> float
-  val from_float : float -> t
-end
+type pre_net
 
-module type Network = sig
+type net
 
-  module D : Data
+val create : int -> int -> pre_net
 
-  type pre_net
+val add_layer : pre_net -> Layer.t -> pre_net
 
-  type net
+val seal : pre_net -> Layer.t -> net
 
-  val create : int -> int -> pre_net
+val input_size : net -> int
 
-  val add_layer : pre_net -> Layer.t -> pre_net
+val output_size : net -> int
 
-  val seal : pre_net -> Layer.t -> net
+val run : net -> float array -> float array
 
-  val input_size : net -> int
+val to_string : net -> string
 
-  val output_size : net -> int
+val from_string : string -> net
 
-  val run : net -> D.t list -> D.t list
+val copy_pre_net : pre_net -> pre_net
 
-  val to_string : net -> string
+val copy_net : net -> net
 
-  val from_string : string -> net
+val print_pre_net : pre_net -> unit
 
-  val copy_pre_net : pre_net -> pre_net
-
-  val copy_net : net -> net
-
-  val print_pre_net : pre_net -> unit
-
-  val print_net : net -> unit
-
-end
-
-module Make (D : Data) : Network with module D = D
+val print_net : net -> unit
