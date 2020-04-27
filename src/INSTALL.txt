@@ -9,7 +9,7 @@ on any other OS. In particular, we have no idea whether these will work on WSL.
 
 The main goal of these instructions is to install the `owl` package from `opam`.
 
-1. Run `opam install -y owl`.
+1. Run `opam install -y csv owl`.
 
 2. If the installation completed successfully, then jump to step 5.
 
