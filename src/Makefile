@@ -13,7 +13,7 @@ build:
 	$(OCAMLBUILD) $(OBJECTS)
 
 zip:
-	zip src.zip *.ml* _tags .merlin .ocamlinit Makefile
+	zip src.zip *.ml* _tags .merlin .ocamlinit Makefile INSTALL.txt
 
 docs: docs-public docs-private
 

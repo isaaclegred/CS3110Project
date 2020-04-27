@@ -1,5 +1,3 @@
-open IO
-
 (* This could maybe be stored in the parameters file. *)
 (* If we have some parameters $p_i$ and the model is attempting to fit to some
    data $f(t_k)$ with some model $m(t_k, p)$ then the Jacobian is
