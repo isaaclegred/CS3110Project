@@ -18,13 +18,13 @@ module Make (In : Data) (Out : Data)
       M.mat array * M.mat array
   }
 
-  let learning_rate = 0.03 (* Arbitrarily chosen *)
+  let learning_rate = 0.00001 (* Arbitrarily chosen *)
 
   let layer =
     Layer.create
       (M.uniform Out.size In.size)
       (M.zeros Out.size 1)
-      (List.init Out.size (fun _ -> Owl.Maths.sigmoid))
+      (List.init Out.size (fun _ -> (* TODO Owl.Maths.sigmoid *) fun x -> x))
 
   let create ins outs =
     if Array.length ins <> Array.length outs then

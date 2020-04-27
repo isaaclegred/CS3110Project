@@ -14,7 +14,7 @@ let construct_cost data params =
 let construct_weight_deriv data params =
   let f = construct_fun_from_params params in
   let residuals = M.(f (fst data) - snd data) in
-  M.(2. $* transpose residuals * fst data)
+  M.(2. $* fst data *@ transpose residuals)
 
 (* Returns a 1 x s matrix: derivative of cost w.r.t. biases.
    [data] is (seen data (r, 1), unseen data (s, 1)).
@@ -59,16 +59,16 @@ module OneLayerDerivative (In: Trainer.Data) (Out: Trainer.Data) :
     let wd = apply construct_weight_deriv in
     let bd = apply construct_bias_deriv in
     let mean mats =
+      let n = mats |> Array.length |> Float.of_int in
       let r, c = M.shape mats.(0) in
       let ans = [| M.zeros r c |] in
-      Array.iter (fun mat -> ans.(0) <- M.(ans.(0) + mat)) mats;
-      ans.(0) <- M.(ans.(0) /$ (mats |> Array.length |> Float.of_int));
+      Array.iter (fun mat -> ans.(0) <- M.(ans.(0) + mat /$ n)) mats;
       ans in
     mean wd, mean bd
 
 end
 
-let run_test count input_size output_size max_multiplier =
+let run_test count input_size output_size iterations max_multiplier =
 
   let module In = struct
     type t = float array
@@ -115,15 +115,26 @@ let run_test count input_size output_size max_multiplier =
   let one_layer_trainer = T.create input_data output_data |> ref
   in
 
-  for i = 0 to 99 do
-    print_string "Iteration number "; print_int i; print_endline "\n";
-    print_string "Loss: ";
+  let print_arr arr =
+    Array.iter (fun x -> print_float x; print_string " ") arr |> print_newline;
+    arr
+  in
+
+  let pp_arr2 name arr =
+    print_endline name;
+    Array.iter (fun x -> print_arr x |> ignore) arr |> print_newline;
+    arr
+  in
+
+  for i = 1 to iterations do
+    print_string "Iteration #"; print_int i; print_endline "\n";
     input_data
+    |> pp_arr2 "Input:"
     |> Array.map (!one_layer_trainer |> T.get_network |> Network.run)
+    |> (fun x -> pp_arr2 "Expected:" output_data |> ignore; pp_arr2 "Actual:" x)
     |> Array.map2 Trainer.cost output_data
     |> Array.fold_left (-.) 0.
-    |> print_float;
-    print_endline "\n";
+    |> (fun x -> print_string "Loss: "; print_float x; print_endline "\n");
     (* !one_layer_trainer |> T.get_network |> Network.print_net; *)
     one_layer_trainer := !one_layer_trainer |> T.update
   done;
@@ -131,4 +142,4 @@ let run_test count input_size output_size max_multiplier =
 
 (* [Mat.print] DOES NOT FLUSH PROPERLY SO EVERYTHING'S JUMBLED UP IN UTOP *)
 
-let () = run_test 1 9 1 1.
+(* let () = run_test 10 9 1 1000 1. *)
