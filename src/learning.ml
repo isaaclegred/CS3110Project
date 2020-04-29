@@ -142,4 +142,4 @@ let run_test count input_size output_size iterations max_multiplier =
 
 (* [Mat.print] DOES NOT FLUSH PROPERLY SO EVERYTHING'S JUMBLED UP IN UTOP *)
 
-(* let () = run_test 10 9 1 1000 1. *)
+ let () = run_test 10 9 1 1000 1.
