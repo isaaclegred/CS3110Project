@@ -23,9 +23,12 @@ module type Trainer = sig
   module Out : Data
   module D : Derivative
   type t
-  val learning_rate : float
+  val learning_rate : float ref
   val create : In.t array -> Out.t array -> t
-  val update : t -> t
+  type update_status =
+    | Accept of t
+    | Reject of t
+  val update : t -> update_status
   val train : t -> t
   val get_network : t -> Network.net
 end

@@ -18,7 +18,7 @@ module Make (In : Data) (Out : Data)
       M.mat array * M.mat array
   }
 
-  let learning_rate = 0.00001 (* Arbitrarily chosen *)
+  let learning_rate = ref 0.00001 (* Arbitrarily chosen *)
 
   let layer =
     Layer.create
@@ -40,13 +40,24 @@ module Make (In : Data) (Out : Data)
         ) in
       {input; output; network; deriv = D.eval input output}
 
+  type update_status =
+    | Accept of t
+    | Reject of t
   let update {input; output; network; deriv} =
-    let f = learning_rate |> M.($*) |> Array.map in
+    let original_cost = cost (Network.run network (M.to_array input))
+         (M.to_array output) in 
+    let f = !learning_rate |> M.($*) |> Array.map in
     let layers = network |> Network.net_layers in
     let ws = layers |> Array.map Layer.get_weights in
     let bs = layers |> Array.map Layer.get_biases in
     let weights, biases = deriv network ws bs |> fun (x, y) -> f x, f y in
-    {input; output; network = Network.decr weights biases network; deriv}
+    let new_network = Network.decr weights biases network in
+    let attempt = {input; output;
+                   network = new_network; deriv} in
+    let final_cost = cost (Network.run network (M.to_array input))
+        (M.to_array output) in
+    if (final_cost > original_cost) then Reject {input; output; network; deriv}
+    else Accept attempt
 
   let train {input; output; network; deriv} = failwith "Unimplemented"
 
