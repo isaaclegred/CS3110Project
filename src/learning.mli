@@ -26,4 +26,11 @@ val construct_bias_deriv :
 module OneLayerDerivative (In: Trainer.Data) (Out: Trainer.Data) :
   Trainer.Derivative with module In = In and module Out = Out
 
-val run_test : int -> int -> int -> int -> float -> unit
+val run_test :
+  int ->
+  int ->
+  int ->
+  int ->
+  float ->
+  (float -> float) ->
+  Network.net

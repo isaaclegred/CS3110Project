@@ -68,7 +68,7 @@ module OneLayerDerivative (In: Trainer.Data) (Out: Trainer.Data) :
 
 end
 
-let run_test count input_size output_size iterations max_multiplier =
+let run_test count input_size output_size iterations noise f =
 
   let module In = struct
     type t = float array
@@ -87,11 +87,13 @@ let run_test count input_size output_size iterations max_multiplier =
   let module T = OneLayer.Make(In)(Out)(OneLayerDerivative(In)(Out))
   in
 
-  (* Create an array of length [In.size + Out.size], whose entries are [at^2],
-     where [t] is the index in the array and [a] is a random fixed float. *)
+  (* Create an array of length [In.size + Out.size], whose entries are [f t]
+     but adjusted by a random factor up to [+/- noise], where [t] is the
+     index in the array. *)
   let rnd_seq _ =
-    let a = Random.float max_multiplier in
-    Array.init (In.size + Out.size) (fun t -> a *. Float.of_int t ** 2.)
+    let quiet t = t |> Float.of_int |> f in
+    let noisy t = quiet t *. (Random.float (noise *. 2.) -. noise +. 1.) in
+    Array.init (In.size + Out.size) noisy
   in
 
   let split n arr =
@@ -138,8 +140,10 @@ let run_test count input_size output_size iterations max_multiplier =
     (* !one_layer_trainer |> T.get_network |> Network.print_net; *)
     one_layer_trainer := !one_layer_trainer |> T.update
   done;
-  !one_layer_trainer |> T.get_network |> Network.print_net
+  !one_layer_trainer |> T.get_network |> (fun x -> Network.print_net x; x)
 
 (* [Mat.print] DOES NOT FLUSH PROPERLY SO EVERYTHING'S JUMBLED UP IN UTOP *)
 
- let () = run_test 10 9 1 1000 1.
+(* let _ = run_test 10 9 1 1000 0.05 (fun x -> x ** 2.) *)
+
+(* run_test count input_size output_size iterations noise f *)
