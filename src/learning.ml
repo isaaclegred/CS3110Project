@@ -84,7 +84,7 @@ let run_test count input_size output_size iterations noise f =
   end
   in
 
-  let module T = OneLayer.Make(In)(Out)(OneLayerDerivative(In)(Out))
+  let module OneLayerT = OneLayer.Make(In)(Out)(OneLayerDerivative(In)(Out))
   in
 
   (* Create an array of length [In.size + Out.size], whose entries are [f t]
@@ -114,7 +114,7 @@ let run_test count input_size output_size iterations noise f =
   let input_data, output_data = unzip time_series
   in
 
-  let one_layer_trainer = T.create input_data output_data |> ref
+  let one_layer_trainer = OneLayerT.create input_data output_data |> ref
   in
 
   let print_arr arr =
@@ -132,15 +132,15 @@ let run_test count input_size output_size iterations noise f =
     print_string "Iteration #"; print_int i; print_endline "\n";
     input_data
     |> pp_arr2 "Input:"
-    |> Array.map (!one_layer_trainer |> T.get_network |> Network.run)
+    |> Array.map (!one_layer_trainer |> OneLayerT.get_network |> Network.run)
     |> (fun x -> pp_arr2 "Expected:" output_data |> ignore; pp_arr2 "Actual:" x)
     |> Array.map2 Trainer.cost output_data
     |> Array.fold_left (-.) 0.
     |> (fun x -> print_string "Loss: "; print_float x; print_endline "\n");
     (* !one_layer_trainer |> T.get_network |> Network.print_net; *)
-    one_layer_trainer := !one_layer_trainer |> T.update
+    one_layer_trainer := !one_layer_trainer |> OneLayerT.update
   done;
-  !one_layer_trainer |> T.get_network |> (fun x -> Network.print_net x; x)
+  !one_layer_trainer |> OneLayerT.get_network |> (fun x -> Network.print_net x; x)
 
 (* [Mat.print] DOES NOT FLUSH PROPERLY SO EVERYTHING'S JUMBLED UP IN UTOP *)
 

@@ -10,6 +10,12 @@ type net = Layer.t array
 
 let create input_size output_size = {input_size; output_size; layers = []}
 
+(* A layer added to a pre_net must agree with all the layers that came before it,
+   i.e. the invariant of a pre_net is that all of the weights beloning to the layers
+   must be composable into a a valid matrix product that terminates with a matrix that 
+   returns [output_size] floats.  No guarantee is made of what is a valid input to 
+   the matrix product. 
+*)
 let add_layer layer {input_size; output_size; layers} =
   let size =
     match layers with
@@ -19,6 +25,11 @@ let add_layer layer {input_size; output_size; layers} =
     Invalid_argument "Layer has bad input shape" |> raise
   else {input_size; output_size; layers = layer :: layers}
 
+
+(* Add the final layer to the neural net, the resulting map must take [input_size]
+   to [output_size] floats.  A network can be seen as a pre_net with an additional
+   condition that the matrix product of weights takes arguments of size [input_size]
+*)
 let seal layer pre_network =
   let {input_size; output_size; layers} = add_layer layer pre_network in
   let size =
@@ -32,6 +43,7 @@ let seal layer pre_network =
 let input_size network = Layer.input_size network.(0)
 
 let output_size network = Layer.layer_size network.(Array.length network - 1)
+
 
 let run network inputs =
   inputs
