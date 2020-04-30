@@ -1,3 +1,11 @@
+
+(** A [Layer.t] is a layer in a neural network.  It represents abstractly a map
+    from an matrix  [input_size] floats to a matrix of [layer_size floats].  In more depth
+    it is a combination of a matrix multiplication, of a matrix (returned by [get_weights]),
+    a vector addition with the output of [get_biases], and a list of functions given by 
+    [get_activations]. It also serves as an interface for modifying all of these data, and 
+    in the process modyfying the neural net the layer is a part of.  
+*)
 type t
 
 (* Can we change the types in here to be [IO.Mat.mat]s or something to hide the implementation? *)
