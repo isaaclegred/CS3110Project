@@ -43,9 +43,15 @@ module Make (In : Data) (Out : Data)
   type update_status =
     | Accept of t
     | Reject of t
-  let update {input; output; network; deriv} =
-    let original_cost = cost (Network.run network (M.to_array input))
-         (M.to_array output) in 
+  let compute_cost {input; output; network; deriv} =
+    let layer = (Network.net_layers network).(0)  in
+    let params = Layer.(get_weights layer, get_biases layer) in
+    Learning.construct_cost (input, output) params
+  let update ({input; output; network; deriv} as training) =
+
+    (* (input |> Array.map Network.run network) |>
+     * Array.map2 cost output |> Array.fold_left (+.) 0. *)
+    let original_cost  =  compute_cost training in 
     let f = !learning_rate |> M.($*) |> Array.map in
     let layers = network |> Network.net_layers in
     let ws = layers |> Array.map Layer.get_weights in
@@ -54,9 +60,10 @@ module Make (In : Data) (Out : Data)
     let new_network = Network.decr weights biases network in
     let attempt = {input; output;
                    network = new_network; deriv} in
-    let final_cost = cost (Network.run network (M.to_array input))
-        (M.to_array output) in
-    if (final_cost > original_cost) then Reject {input; output; network; deriv}
+    let final_cost = compute_cost attempt in
+    (* print_endline ("Initial Cost " ^ string_of_float original_cost); *)
+    (*  print_endline ("Final Cost " ^ string_of_float final_cost); *)
+  if (final_cost > original_cost) then Reject {input; output; network; deriv}
     else Accept attempt
 
   let train {input; output; network; deriv} = failwith "Unimplemented"

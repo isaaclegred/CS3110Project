@@ -139,8 +139,10 @@ let run_test count input_size output_size iterations noise f =
     |> (fun x -> print_string "Loss: "; print_float x; print_endline "\n");
     (* !one_layer_trainer |> T.get_network |> Network.print_net; *)
     match !one_layer_trainer |> OneLayerT.update with
-    | OneLayerT.Reject worse -> ignore OneLayerT.(learning_rate := !learning_rate /. 2.0);
-    | OneLayerT.Accept better -> ignore OneLayerT.(learning_rate := !learning_rate *. 1.05);
+    | OneLayerT.Reject worse -> (* print_endline "Rejected";*)
+                                  ignore OneLayerT.(learning_rate := !learning_rate /. 2.0);
+    | OneLayerT.Accept better -> (*print_endline "accepted";*)
+      ignore OneLayerT.(learning_rate := !learning_rate *. 1.05);
       (one_layer_trainer := better);
   done;
   !one_layer_trainer |> OneLayerT.get_network |> (fun x -> Network.print_net x; x)

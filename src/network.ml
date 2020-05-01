@@ -45,7 +45,7 @@ let input_size network = Layer.input_size network.(0)
 let output_size network = Layer.layer_size network.(Array.length network - 1)
 
 
-let run network inputs =
+let run network (inputs:float array) : float array =
   inputs
   |> (fun arr -> M.of_array arr (Array.length arr) 1)
   |> (fun mat -> Array.fold_left Layer.run mat network)
@@ -84,3 +84,4 @@ let print_pre_net {input_size; output_size; layers} =
   List.iter Layer.print layers
 
 let print_net = Array.iter Layer.print
+
