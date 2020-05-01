@@ -23,13 +23,23 @@ module type Trainer = sig
   module D : Derivative
 
   type t
-
-  val learning_rate : float
+  (* We want to be able to change the learning rate during the training to
+  increase convergence speed*)
+  val learning_rate : float ref
 
   val create : In.t array -> Out.t array -> t
 
+  (* In general we will only want to actually update the parameters if the 
+     objective function is smaller after the update.  This will allow us to 
+     use larger step sizes overall and only use a smaller one if the larger 
+     one fails to produce a useful step. .
+  *)
+  type update_status  =
+    | Accept of t
+    | Reject of t
+       
   (* Train once *)
-  val update : t -> t
+  val update : t -> update_status
 
   (* Update until some threshold *)
   val train : t -> t
