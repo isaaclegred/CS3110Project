@@ -1,4 +1,29 @@
+module M = Owl.Mat
 open Trainer
+
+ let construct_fun_from_params params input =
+  M.(fst params *@ input + snd params)
+
+let construct_cost data params =
+  let f = construct_fun_from_params params in
+  let residuals = M.(f (fst data) - snd data) in
+  M.(residuals |> sqr |> sum')
+
+(* Returns an r x s matrix: derivative of cost w.r.t. weights.
+   [data] is (seen data (r, 1), unseen data (s, 1)).
+   [params] is (weights (r x s), biases (1 x s)). *)
+let construct_weight_deriv data params =
+  let f = construct_fun_from_params params in
+  let residuals = M.(f (fst data) - snd data) in
+  M.(2. $* fst data *@ transpose residuals)
+
+(* Returns a 1 x s matrix: derivative of cost w.r.t. biases.
+   [data] is (seen data (r, 1), unseen data (s, 1)).
+   [params] is (weights (r x s), biases (1 x s)). *)
+let construct_bias_deriv data params =
+  let f = construct_fun_from_params params in
+  let residuals = M.(f (fst data) - snd data) in
+  M.(2. $* transpose residuals)
 
 module Make (In : Data) (Out : Data)
     (D : Derivative with module In = In and module Out = Out) = struct
@@ -43,9 +68,15 @@ module Make (In : Data) (Out : Data)
   type update_status =
     | Accept of t
     | Reject of t
-  let update {input; output; network; deriv} =
-    let original_cost = cost (Network.run network (M.to_array input))
-         (M.to_array output) in 
+  let compute_cost {input; output; network; deriv} =
+    let layer = (Network.net_layers network).(0)  in
+    let params = Layer.(get_weights layer, get_biases layer) in
+    construct_cost (input, output) params
+  let update ({input; output; network; deriv} as training) =
+
+    (* (input |> Array.map Network.run network) |>
+     * Array.map2 cost output |> Array.fold_left (+.) 0. *)
+    let original_cost  =  compute_cost training in 
     let f = !learning_rate |> M.($*) |> Array.map in
     let layers = network |> Network.net_layers in
     let ws = layers |> Array.map Layer.get_weights in
@@ -54,9 +85,10 @@ module Make (In : Data) (Out : Data)
     let new_network = Network.decr weights biases network in
     let attempt = {input; output;
                    network = new_network; deriv} in
-    let final_cost = cost (Network.run network (M.to_array input))
-        (M.to_array output) in
-    if (final_cost > original_cost) then Reject {input; output; network; deriv}
+    let final_cost = compute_cost attempt in
+    (* print_endline ("Initial Cost " ^ string_of_float original_cost); *)
+    (*  print_endline ("Final Cost " ^ string_of_float final_cost); *)
+  if (final_cost > original_cost) then Reject {input; output; network; deriv}
     else Accept attempt
 
   let train {input; output; network; deriv} = failwith "Unimplemented"
