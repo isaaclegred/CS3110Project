@@ -1,33 +1,117 @@
-
 %%% Local Variables:
 %%% mode: pdftex
 %%% TeX-master: t
 %%% End:
+
 \documentclass{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{palatino}
+\usepackage[inline]{enumitem}
+\usepackage{hyperref}
+\usepackage{xcolor}
+
 \title{MS1 Progress Report}
 \author{Arthur Tanjaya and Isaac Legred}
 
 \begin{document}
 
+\maketitle
+
 \section{Vision}
 \label{sec:vision}
+
+Our vision has not changed appreciably since the last sprint. Although much of our implementation has deviated from our original design, the overarching goal of the project remains the same.
+
+We aim to build a neural network for making statistical inferences about complicated models with many
+interacting parameters.
+
+We hope this project can
+\begin{itemize}
+  \item Accurately predict future behavior of a system from its past behavior,
+  \item Provide an easy to understand user interface which gives meaningful feedback,
+  \item Provide statistical information about how confident the model is in its prediction,
+  \item Be extensible and capable of many different types of input models.
+\end{itemize}
+
+There are many examples of systems which can be represented as a single variable function of time, many
+governend by difficult-to-understand rules.  Rather than attempt to provide models for all of these
+phenomena, we will allow a neural network to predict the future behavior of a time-series from the past behavior.  This is widely applicable to everything from stock prices to weather.  The model will, if correct, and applicable, give both new insight into the behavior of these systems, as well as information regarding how consistently these insights apply.
 
 \section{Summary of Progress}
 \label{sec:summary}
 
+We managed to build a working single-layer neural network that can accurately predict data following simple trends. For example, we tested our network on data following linear, quadratic, cubic and sinusoidal trends, and found that after sufficiently many iterations, it was able to predict the next data point within the amount of noise put into the input data. This was what we showed off in the demo.
+
+There are two main modules backing the neural network: the \texttt{Layer} and \texttt{Network} modules. As suggested by the names, these are responsible for implementing (and abstracting) the linear algebra used to push data across the network. We also have another module for learning/training the network, called \texttt{Learning}. We've managed to implement all of the functionality of \texttt{Layer} and \texttt{Network}, and are left with implementing \texttt{Learning} for multi-layer neural networks.
+
 \section{Activity Breakdown}
 \label{sec:activity}
+
+\begin{itemize}[leftmargin=2cm]
+
+\item[Arthur]
+	\begin{itemize}
+	
+	\item Created types to abstract away the layer(s) and the network(s).
+	\item Wrote the sample learning suite for testing and demoing.
+	\item Implemented functions to print the internals of a network for debugging.
+
+	\end{itemize}
+
+\item[Isaac]
+	\begin{itemize}
+	
+	\item Created and implemented functions for I/O to and from files.
+	\item Implemented functions to compute the cost of a set of parameters.
+	\item Implemented functions to compute the derivative for cost-minimization.
+	
+	\end{itemize}
+
+\end{itemize}
 
 \section{Productivity Analysis}
 \label{sec:productivity}
 
+We found that we were quite productive. We realized that we could have been more productive if we had established the design of our project more concretely (e.g. in terms of what data types/modules to develop). Nevertheless, as discussed below, we were able to accomplish up to the Good scope of our expectations, which means that we were quite accurate in predicting what we could do within a week.
+
 \section{Scope Grade}
 \label{sec:scope}
+
+We tested our neural network by feeding it a dataset of nine points and asking it to predict the tenth one. This was done across ten datasets, and the performance of the neural network was measured by the sum of the squares of the differences between the expected outputs of the function and the ones predicted by the network. We found that in cases where the neural network converges, the predicted results were very close to the actual results. Specifically, the accuracy of the network was within the amount of noise we introduced to the data.
+
+Looking back at our initial scopes, we found that we managed to do around half of each category. Thus, it appears reasonable to give ourselves a Good grade.
 
 \section{Goals}
 \label{sec:goals}
 
+\begin{itemize}
 
+\item[MS2]
+	\begin{itemize}[leftmargin=2cm]
+	
+	\item[Satisfactory]
+		\begin{itemize}
+		\item I/O module should be able to read and write data correctly.
+		\item Data processing module should be able to parse raw data into our OCaml types.
+		\end{itemize}
 
+	\item[Good]
+		\begin{itemize}
+		\item Have a multi-layer neural network that can be trained to accurately predict data following `simple' trends (e.g. like functions a Calc 1 student would know).
+		\item Have an adaptive learning rate to prevent the parameters from diverging to infinity.
+		\end{itemize}
+
+	\item[Excellent]
+		\begin{itemize}
+		\item Be able to do statistical inferences on the parameters of the model, i.e. the machine should be able to output how reliable its model is.
+		\item Have a robust neural network, i.e. one that can still perform accurately even when the data has a lot of noise.
+		\item Optimize reading and writing so that it's not an execution speed bottleneck.
+		\end{itemize}
+	
+	\end{itemize}
+
+\end{itemize}
 
 \end{document}
