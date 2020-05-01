@@ -1,6 +1,5 @@
 module M = Owl.Mat
-
-let construct_fun_from_params params input =
+ let construct_fun_from_params params input =
   M.(fst params *@ input + snd params)
 
 let construct_cost data params =
@@ -23,6 +22,7 @@ let construct_bias_deriv data params =
   let f = construct_fun_from_params params in
   let residuals = M.(f (fst data) - snd data) in
   M.(2. $* transpose residuals)
+
 
 (* Example of how to use the Trainer module, specifically the OneLayer
    implementation. The network in OneLayer is a single layer network with one
@@ -149,6 +149,6 @@ let run_test count input_size output_size iterations noise f =
 
 (* [Mat.print] DOES NOT FLUSH PROPERLY SO EVERYTHING'S JUMBLED UP IN UTOP *)
 
-(* let _ = run_test 10 9 1 1000 0.05 (fun x -> x ** 2.) *)
+ let _ = run_test 10 9 1 1000 0.05 (fun x -> x ** 2.) 
 
 (* run_test count input_size output_size iterations noise f *)

@@ -1,4 +1,29 @@
+module M = Owl.Mat
 open Trainer
+
+ let construct_fun_from_params params input =
+  M.(fst params *@ input + snd params)
+
+let construct_cost data params =
+  let f = construct_fun_from_params params in
+  let residuals = M.(f (fst data) - snd data) in
+  M.(residuals |> sqr |> sum')
+
+(* Returns an r x s matrix: derivative of cost w.r.t. weights.
+   [data] is (seen data (r, 1), unseen data (s, 1)).
+   [params] is (weights (r x s), biases (1 x s)). *)
+let construct_weight_deriv data params =
+  let f = construct_fun_from_params params in
+  let residuals = M.(f (fst data) - snd data) in
+  M.(2. $* fst data *@ transpose residuals)
+
+(* Returns a 1 x s matrix: derivative of cost w.r.t. biases.
+   [data] is (seen data (r, 1), unseen data (s, 1)).
+   [params] is (weights (r x s), biases (1 x s)). *)
+let construct_bias_deriv data params =
+  let f = construct_fun_from_params params in
+  let residuals = M.(f (fst data) - snd data) in
+  M.(2. $* transpose residuals)
 
 module Make (In : Data) (Out : Data)
     (D : Derivative with module In = In and module Out = Out) = struct
@@ -46,7 +71,7 @@ module Make (In : Data) (Out : Data)
   let compute_cost {input; output; network; deriv} =
     let layer = (Network.net_layers network).(0)  in
     let params = Layer.(get_weights layer, get_biases layer) in
-    Learning.construct_cost (input, output) params
+    construct_cost (input, output) params
   let update ({input; output; network; deriv} as training) =
 
     (* (input |> Array.map Network.run network) |>
