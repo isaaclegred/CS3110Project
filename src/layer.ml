@@ -66,3 +66,11 @@ let print {weights; biases; activations} =
   M.print weights |> Format.print_newline;
   print_endline "Biases:";
   M.print biases |> Format.print_newline
+
+let deriv prefactor input  ({weights; biases; activations} as layer) =
+  if snd (M.shape prefactor) <> layer_size layer
+       then Invalid_argument "Bad shape in deriv"|> raise  
+       else (* TODO *)
+         M.ones 1 1
+               
+  

@@ -50,3 +50,9 @@ val from_string : string -> t
 val copy : t -> t
 
 val print : t -> unit
+
+(* First matrix is a matrix to prepend onto the front which represents
+   all the derivatives to the "left" of this layer, the second is the output 
+   of all the layers to the right.  
+*)
+val deriv : Owl.Mat.mat -> Owl.Mat.mat -> t -> Owl.Mat.mat
