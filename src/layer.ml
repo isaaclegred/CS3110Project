@@ -9,7 +9,7 @@ type t = {
 
 let create weights biases acts act_derivs=
   let size = List.length acts in
-  if M.row_num weights <> size || M.shape biases <> (size, 1) then
+  if M.col_num weights <> size || M.shape biases <> (size, 1) then
     Invalid_argument "Shapes do not match" |> raise
   else {weights; biases; activations = List.nth acts;
         activation_derivative = List.nth act_derivs}
@@ -52,7 +52,7 @@ let set_activations new_activations new_derivs
   if List.length new_activations <> layer_size layer then
     Invalid_argument "Bad length" |> raise
   else {weights; biases; activations = List.nth new_activations;
-        activation_derivative = new_derivs}
+        activation_derivative = List.nth new_derivs}
 
 let run input ({weights; biases; activations; activation_derivative} as layer) =
   if M.shape input <> (input_size layer, 1) then
@@ -110,6 +110,6 @@ let deriv prefactor desired_output actual_output input
          M.(prefactor *@ (ones out_size 1))
     in let pre_weight_deriv =  M.(prefactor_row_sums * input) in 
     let weight_deriv = M.(mapi_2d (fun i j elt -> (get residuals i 1) *. elt) pre_weight_deriv) in
-    (weight_deriv, bias_derivs, total_linearization)
+    ((weight_deriv, bias_derivs), total_linearization)
     
   

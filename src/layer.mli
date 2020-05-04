@@ -13,7 +13,7 @@ type t
 (* What are activations? *)
 
 (* Create a layer with [weights], [biases], [activations] *)
-val create : Owl.Mat.mat -> Owl.Mat.mat -> (float -> float) list -> t
+val create : Owl.Mat.mat -> Owl.Mat.mat -> (float -> float) list -> (float -> float) list -> t
 
 val input_size : t -> int
 
@@ -38,7 +38,7 @@ val decr_biases : Owl.Mat.mat -> t -> t
 
 val get_activations : t -> (float -> float) list
 
-val set_activations : (float -> float) list -> t -> t
+val set_activations : (float -> float) list -> (float -> float) list -> t -> t
 
 (* Return the predicted [output] of this layer based on the [input] *)
 val run : Owl.Mat.mat -> t -> Owl.Mat.mat
@@ -52,7 +52,9 @@ val copy : t -> t
 val print : t -> unit
 
 (* First matrix is a matrix to prepend onto the front which represents
-   all the derivatives to the "left" of this layer, the second is the output 
-   of all the layers to the right.  
+   all the derivatives to the "left" of this layer, the second is the desired output 
+   of the neural net, third is the actual output of the net, fourth is the input to this
+   layer.  Returns (weight_deriv, bias_deriv), input_deriv (linearization of this layer)
 *)
-val deriv : Owl.Mat.mat -> Owl.Mat.mat -> t -> Owl.Mat.mat
+val deriv : Owl.Mat.mat -> Owl.Mat.mat -> Owl.Mat.mat -> Owl.Mat.mat -> t ->
+  (Owl.Mat.mat * Owl.Mat.mat) * Owl.Mat.mat                                                                                

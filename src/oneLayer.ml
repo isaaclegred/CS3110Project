@@ -48,9 +48,9 @@ module Make (In : Data) (Out : Data)
   let layer =
     Layer.create
       (M.uniform Out.size In.size)
-      (M.zeros Out.size 1)
-      (List.init Out.size (fun _ -> (* TODO Owl.Maths.sigmoid *) fun x -> x))
-
+      (M.zeros In.size 1)
+      (List.init In.size (fun _ -> (* TODO Owl.Maths.sigmoid *) fun x -> x))
+      (List.init In.size (fun _ -> (* TODO Owl.Maths.sigmoid' *) fun x -> 1.0))
   let create ins outs =
     if Array.length ins <> Array.length outs then
       Invalid_argument "Inputs and outputs must be the same length" |> raise
