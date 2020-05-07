@@ -45,11 +45,13 @@ module OneLayerDerivative (In: Trainer.Data) (Out: Trainer.Data) :
      Requires: [weights] and [biases] have length [1]. *)
   let eval inputs outputs network =
     let layers  = Network.net_layers network in
+    print_endline "about to evaluate layers in learning.ml";
     let evaluated_layers  = Canonical_deriv.eval_layers
         (layers) (inputs) in
+    print_endline "evaluated layers";
     let evaluated_derivatives = Canonical_deriv.eval_derivative
         layers inputs outputs evaluated_layers in
-
+    print_endline "evaluated derivatives";
     Array.map (fun pair -> fst pair) evaluated_derivatives
 end
  

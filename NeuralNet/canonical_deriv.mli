@@ -1,6 +1,6 @@
 (* Evluate the layers one at a time and store the intermediate results *)
 module Mat = Owl.Mat
-val eval_layers :  Layer.t array -> Mat.mat -> Mat.mat array 
+val eval_layers :  Layer.t array -> Mat.mat -> (Mat.mat * Mat.mat) array 
 
 (* Now that the function is evaluated at all of the layers computing the derivative is just
  the linear response of the function to the parameters, the derivative at the last parameters 
@@ -22,6 +22,6 @@ val eval_layers :  Layer.t array -> Mat.mat -> Mat.mat array
    with the derivative of the sigmoid derivative afterward. 
    END LATEX
 *)
-val eval_derivative :  Layer.t array -> Mat. mat -> Mat.mat -> Mat.mat array ->
-  ((Mat.mat * Mat.mat) * Mat.mat) array 
+val eval_derivative :  Layer.t array -> Mat.mat  ->Mat. mat -> (Mat.mat * Mat.mat) array
+ -> ((Mat.mat * Mat.mat) * Mat.mat) array 
   

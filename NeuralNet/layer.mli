@@ -43,6 +43,10 @@ val set_activations : (float -> float) list -> (float -> float) list -> t -> t
 (* Return the predicted [output] of this layer based on the [input] *)
 val run : Owl.Mat.mat -> t -> Owl.Mat.mat
 
+(* Return the predicted [output] of this layer based on the [input], but with the 
+intermediate result as well, intermediate result is first *)
+val run_with_intermediate : Owl.Mat.mat -> t -> (Owl.Mat.mat * Owl.Mat.mat)
+
 val to_string : t -> string
 
 val from_string : string -> t
@@ -56,5 +60,5 @@ val print : t -> unit
    of the neural net, third is the actual output of the net, fourth is the input to this
    layer.  Returns (weight_deriv, bias_deriv), input_deriv (linearization of this layer)
 *)
-val deriv : Owl.Mat.mat -> Owl.Mat.mat -> Owl.Mat.mat -> Owl.Mat.mat -> t ->
+val deriv : Owl.Mat.mat -> Owl.Mat.mat -> Owl.Mat.mat -> (Owl.Mat.mat * Owl.Mat.mat) -> t ->
   (Owl.Mat.mat * Owl.Mat.mat) * Owl.Mat.mat                                                                                
