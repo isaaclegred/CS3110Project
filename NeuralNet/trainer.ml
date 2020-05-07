@@ -1,6 +1,9 @@
+module Mat = Owl.Mat
 let cost expected actual =
-  let to_mat arr = Owl.Mat.of_array arr (Array.length arr) 1 in
-  Owl.Mat.((to_mat expected) - (to_mat actual) |> sqr |> sum')
+  let to_mat arr = Mat.of_array arr (Array.length arr) 1 in
+  Mat.((to_mat expected) - (to_mat actual) |> sqr |> sum')
+let cost_mat expected actual =
+  Mat.(expected-actual |> sqr |> sum')
 
 module type Data = sig
   type t
@@ -12,10 +15,9 @@ module type Derivative = sig
   module In : Data
   module Out : Data
   val eval :
-    Owl.Mat.mat -> Owl.Mat.mat ->
+    Mat.mat -> Mat.mat ->
     Network.net ->
-    Owl.Mat.mat array -> Owl.Mat.mat array ->
-    Owl.Mat.mat array * Owl.Mat.mat array
+    (Mat.mat * Mat.mat) array
 end
 
 module type Trainer = sig
@@ -24,7 +26,7 @@ module type Trainer = sig
   module D : Derivative
   type t
   val learning_rate : float ref
-  val create : In.t array -> Out.t array -> t
+  val create : In.t -> Out.t  -> t
   type update_status =
     | Accept of t
     | Reject of t

@@ -32,19 +32,25 @@ let eval_layers (layers : Layer.t array) (input : Mat.mat) : Mat.mat array =
    with the derivative of the sigmoid derivative afterward. 
    END LATEX
 *)
-let eval_derivative layers input desired_output evaluated_layers = 
+let eval_derivative layers input desired_output evaluated_layers :
+  ((Mat.mat * Mat.mat) * Mat.mat) array= 
   let num_layers = Array.length layers in
+  let out_dim = fst (Mat.shape desired_output) in 
   let evaluated_derivs = Array.make num_layers ((Mat.create 1 1 0.0, (Mat.create 1 1 0.0)),
   (Mat.create 1 1 0.0) )in
   let actual_output = evaluated_layers.(num_layers - 1) in 
+  print_endline (string_of_int(fst(Mat.shape evaluated_layers.(0))));
   let rec co_loop index =
     match index with
-    | 0  -> evaluated_derivs.(0) <- (Layer.deriv (snd evaluated_derivs.(1)) desired_output actual_output  input layers.(0) )
-    | leftmost when leftmost = num_layers -> evaluated_derivs.(leftmost) <-
-        Layer.deriv (Mat.create 1 1 1.0) desired_output actual_output
-          evaluated_layers.(leftmost - 1) layers.(leftmost)
-    | j -> evaluated_derivs.(j) <- (Layer.deriv (snd evaluated_derivs.(j - 1))
+    | leftmost when leftmost = (num_layers -1)  ->
+      evaluated_derivs.(leftmost) <-
+        Layer.deriv (Mat.eye out_dim) desired_output actual_output
+          evaluated_layers.(leftmost) layers.(leftmost);
+      if leftmost = 0 then () else co_loop(leftmost);
+    | 0  -> evaluated_derivs.(0) <-
+        (Layer.deriv(snd evaluated_derivs.(1)) desired_output actual_output  input layers.(0) )
+    | j -> evaluated_derivs.(j) <- (Layer.deriv (snd evaluated_derivs.(j + 1))
                                       desired_output actual_output evaluated_layers.(j - 1)
-                                      layers.(j)); co_loop (j-1)
-  in co_loop num_layers;
-  evaluated_layers
+                                      layers.(j-1)); co_loop (j-1)
+  in co_loop (num_layers - 1);
+  evaluated_derivs
