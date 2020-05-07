@@ -63,20 +63,19 @@ module Make (In : Data) (Out : Data)
     | Accept of t
     | Reject of t
   let compute_cost {input; output; network; deriv} =
-    let layer = (Network.net_layers network).(0)  in
-    let params = Layer.(get_weights layer, get_biases layer) in
-    construct_cost (input, output) params
+    cost_mat output (Network.run_mat network input)
   let update ({input; output; network; deriv} as training) =
-
+    print_endline "entered onelayer update";
     (* (input |> Array.map Network.run network) |>
      * Array.map2 cost output |> Array.fold_left (+.) 0. *)
     let original_cost  =  compute_cost training in 
+    print_endline "computed cost";
     let lr = !learning_rate in
     let f =  (fun (w, b) -> M.(( lr $* w,  lr $* b))) |> Array.map in
+    print_endline "got to the derivative";
     let dparams = deriv network |> f  in
     let new_network = Network.decr (Array.map fst dparams)
         (Array.map snd dparams) network in
-
     let attempt = {input; output;
                    network = new_network; deriv} in
     let final_cost = compute_cost attempt in
