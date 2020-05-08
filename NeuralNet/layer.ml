@@ -23,7 +23,7 @@ let get_weights layer = M.copy layer.weights
 let change_weights f new_weights ({weights; biases; activations; activation_derivative}
                                   as layer) =
   if M.row_num new_weights <> layer_size layer then
-    Invalid_argument "Bad shape" |> raise
+    Invalid_argument "Bad shape weights" |> raise
   else {weights = f weights new_weights; biases; activations; activation_derivative}
 
 let set_weights = change_weights (fun _ m -> M.copy m)
@@ -36,7 +36,7 @@ let get_biases layer = M.copy layer.biases
 
 let change_biases f new_biases {weights; biases; activations; activation_derivative} =
   if M.shape new_biases <> M.shape biases then
-    Invalid_argument "Bad shape" |> raise
+    Invalid_argument "Bad shape biases" |> raise
   else {weights; biases = f biases new_biases; activations; activation_derivative}
 
 let set_biases = change_biases (fun _ m -> M.copy m)
@@ -57,8 +57,16 @@ let set_activations new_activations new_derivs
 let run input ({weights; biases; activations; activation_derivative} as layer) =
   if M.shape input <> (input_size layer, 1) then
     Invalid_argument "Bad shape" |> raise
-  else M.(weights *@ ((input + biases) |> mapi activations))
+  else 
+  let result = M.((input + biases) |> mapi activations) in
+  M.(weights *@ result)
 
+let run_with_intermediate input ({weights; biases; activations; activation_derivative} as layer) =
+      if M.shape input <> (input_size layer, 1) then
+    Invalid_argument "Bad shape" |> raise
+  else
+  let partial_result = M.((input + biases) |> mapi activations) in
+  (partial_result, M.(weights *@ partial_result))
 let to_string layer = failwith "Unimplemented" (* TODO *)
 
 let from_string data = failwith "Unimplemented" (* TODO *)
@@ -66,7 +74,7 @@ let from_string data = failwith "Unimplemented" (* TODO *)
 let copy {weights; biases; activations; activation_derivative} =
   {weights = M.copy weights; biases = M.copy biases; activations; activation_derivative}
 
-let print {weights; biases; activations} =
+let print {weights; biases; activations; activation_derivative} =
   print_endline "Weights:";
   M.print weights |> Format.print_newline;
   print_endline "Biases:";
@@ -82,13 +90,17 @@ let print {weights; biases; activations} =
 
 
 let linearization input {weights; biases; activations; activation_derivative} =
+  print_endline "entered linearization";
   let input_size = fst (M.shape input) in 
+  print_endline (string_of_int M.( shape biases|> fst));
   let act_input = M.(input + biases) in
+  print_endline "got act_input";
   let input_deriv = ref (M.copy weights) in
   let rec loop index =
     match index with
-    | max when max = input_size -> ()
-    | i -> let act_deriv = activation_derivative i M.(get act_input i 1 ) in
+    | max when max = (input_size) -> ()
+    | i -> 
+      let act_deriv = activation_derivative i M.(get act_input i 0) in
       input_deriv := M.(map_at_col (fun elt -> act_deriv *. elt)  !input_deriv i ); loop (index + 1) in
    let _ = loop 0 in !input_deriv
 
@@ -97,19 +109,24 @@ let linearization input {weights; biases; activations; activation_derivative} =
  *)
 
 
-let deriv prefactor desired_output actual_output input
+let deriv prefactor desired_output actual_output (partial_input, input)
     ({weights; biases; activations; activation_derivative} as layer) =
+  print_endline "entered layer deriv";
   let out_size = layer_size layer in 
   let residuals = M.(actual_output - desired_output) in
   let local_linearization = linearization input layer in
   let total_linearization = M.(prefactor *@ local_linearization) in 
-  let bias_derivs = M.(transpose (residuals) *@ total_linearization) in
+  print_endline ("completed linearization" ^  (string_of_int M.(shape total_linearization|> snd)));
+  print_endline ("computed residuals" ^  (string_of_int M.(shape residuals|> fst)));
+  let bias_derivs = M.(transpose(total_linearization) *@ residuals ) in
+  print_endline ("bias_deriv problem" ^ (string_of_int M.(shape bias_derivs|> fst))) ;
+  print_endline M.(get_biases layer|> shape |> snd |> string_of_int);
   if  snd (M.shape prefactor) <> out_size
   then Invalid_argument "Bad shape in deriv"|> raise  
-  else let prefactor_row_sums = 
-         M.(prefactor *@ (ones out_size 1))
-    in let pre_weight_deriv =  M.(prefactor_row_sums * input) in 
-    let weight_deriv = M.(mapi_2d (fun i j elt -> (get residuals i 1) *. elt) pre_weight_deriv) in
-    ((weight_deriv, bias_derivs), total_linearization)
-    
+  else let weighted_residuals = 
+         M.(transpose(residuals) *@ prefactor)
+    in 
+    let weight_deriv =  M.(weighted_residuals * partial_input) in
+    print_endline "completed layer deriv";
+    ((M.transpose(weight_deriv), bias_derivs), total_linearization)
   

@@ -39,8 +39,7 @@ module Make (In : Data) (Out : Data)
     network : Network.net;
     deriv :
       Network.net ->
-      M.mat array -> M.mat array ->
-      M.mat array * M.mat array
+      (M.mat * M.mat) array
   }
 
   let learning_rate = ref 0.00001 (* Arbitrarily chosen *)
@@ -52,37 +51,31 @@ module Make (In : Data) (Out : Data)
       (List.init In.size (fun _ -> (* TODO Owl.Maths.sigmoid *) fun x -> x))
       (List.init In.size (fun _ -> (* TODO Owl.Maths.sigmoid' *) fun x -> 1.0))
   let create ins outs =
-    if Array.length ins <> Array.length outs then
-      Invalid_argument "Inputs and outputs must be the same length" |> raise
-    else
-      let to_mat arrs = arrs |> M.of_arrays |> M.transpose in
-      let input = ins |> Array.map In.to_float_array |> to_mat in
-      let output = outs |> Array.map Out.to_float_array |> to_mat in
-      let network =
-        Network.(
-          create In.size Out.size
-          |> seal layer
-        ) in
-      {input; output; network; deriv = D.eval input output}
+    let to_mat arr size = arr |> M.of_array size 1 |> M.transpose in
+    let input = ins |>  In.to_float_array |> to_mat (In.size) in
+    let output = outs |>  Out.to_float_array |> to_mat (Out.size) in
+    Network.(
+      let network = create In.size Out.size
+      |> seal layer in
+  {input; output; network; deriv = D.eval input output})
 
   type update_status =
     | Accept of t
     | Reject of t
   let compute_cost {input; output; network; deriv} =
-    let layer = (Network.net_layers network).(0)  in
-    let params = Layer.(get_weights layer, get_biases layer) in
-    construct_cost (input, output) params
+    cost_mat output (Network.run_mat network input)
   let update ({input; output; network; deriv} as training) =
-
+    print_endline "entered onelayer update";
     (* (input |> Array.map Network.run network) |>
      * Array.map2 cost output |> Array.fold_left (+.) 0. *)
     let original_cost  =  compute_cost training in 
-    let f = !learning_rate |> M.($*) |> Array.map in
-    let layers = network |> Network.net_layers in
-    let ws = layers |> Array.map Layer.get_weights in
-    let bs = layers |> Array.map Layer.get_biases in
-    let weights, biases = deriv network ws bs |> fun (x, y) -> f x, f y in
-    let new_network = Network.decr weights biases network in
+    print_endline "computed cost";
+    let lr = !learning_rate in
+    let f =  (fun (w, b) -> M.(( lr $* w,  lr $* b))) |> Array.map in
+    print_endline "got to the derivative";
+    let dparams = deriv network |> f  in
+    let new_network = Network.decr (Array.map fst dparams)
+        (Array.map snd dparams) network in
     let attempt = {input; output;
                    network = new_network; deriv} in
     let final_cost = compute_cost attempt in

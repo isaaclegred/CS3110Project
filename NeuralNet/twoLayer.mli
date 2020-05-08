@@ -1,7 +1,8 @@
-(* This could maybe be stored in the parameters file. *)
-(* If we have some parameters $p_i$ and the model is attempting to fit to some
-   data $f(t_k)$ with some model $m(t_k, p)$ then the Jacobian is
-   $\frac{\partial m(t_k, p)}{p_i}$. I think this is useful in general. *)
+(* This functor is a valid TrainerMaker for a single layer net, that is, it can be used
+   to update an net if given: [In],  input data, [Out] output data, and a [Derivative] a 
+   Derivative module, all defined in trainer.ml 
+*)
+module Make : Trainer.TrainerMaker
 
 val construct_fun_from_params :
   (* In principle this should be a network?  *)
@@ -26,14 +27,3 @@ val construct_bias_deriv :
   IO.weights * IO.biases ->
   IO.Mat.mat
 
-module OneLayerDerivative (In: Trainer.Data) (Out: Trainer.Data) :
-  Trainer.Derivative with module In = In and module Out = Out
-
-val run_test :
-  int ->
-  int ->
-  int ->
-  int ->
-  float ->
-  (float -> float) ->
-  Network.net

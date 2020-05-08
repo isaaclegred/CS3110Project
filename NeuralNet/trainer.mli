@@ -1,5 +1,6 @@
+module Mat = Owl.Mat
 val cost : float array -> float array -> float
-
+val cost_mat : Mat.mat -> Mat.mat -> float
 module type Data = sig
   type t
   val size : int
@@ -12,8 +13,7 @@ module type Derivative = sig
   val eval :
     Owl.Mat.mat -> Owl.Mat.mat ->
     Network.net ->
-    Owl.Mat.mat array -> Owl.Mat.mat array ->
-    Owl.Mat.mat array * Owl.Mat.mat array
+    (Owl.Mat.mat * Owl.Mat.mat) array
 end
 
 module type Trainer = sig
@@ -27,7 +27,7 @@ module type Trainer = sig
   increase convergence speed*)
   val learning_rate : float ref
 
-  val create : In.t array -> Out.t array -> t
+  val create : In.t -> Out.t  -> t
 
   (* In general we will only want to actually update the parameters if the 
      objective function is smaller after the update.  This will allow us to 

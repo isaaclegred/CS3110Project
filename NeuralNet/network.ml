@@ -1,4 +1,4 @@
-module M = Owl.Mat
+module Mat = Owl.Mat
 
 type pre_net = {
   input_size : int;
@@ -47,9 +47,12 @@ let output_size network = Layer.layer_size network.(Array.length network - 1)
 
 let run network (inputs:float array) : float array =
   inputs
-  |> (fun arr -> M.of_array arr (Array.length arr) 1)
+  |> (fun arr -> Mat.of_array arr (Array.length arr) 1)
   |> (fun mat -> Array.fold_left Layer.run mat network)
-  |> M.to_array
+  |> Mat.to_array
+
+let run_mat network (inputs:Mat.mat) : Mat.mat =
+   (Array.fold_left Layer.run inputs network)
 
 let prop f g weights biases network =
   let size = Array.length network in

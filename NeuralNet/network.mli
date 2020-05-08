@@ -1,6 +1,7 @@
 type pre_net
 
 type net
+module Mat = Owl.Mat
 
 val create : int -> int -> pre_net
 
@@ -14,6 +15,8 @@ val output_size : net -> int
 
 (** Run the neural net [network] on the float array [inputs] to get predicted outputs  *)
 val run : net -> float array -> float array
+
+val run_mat : net -> Mat.mat -> Mat.mat
 
 (** Set the new weights and biases  of the net [network] to [new_weights] and [new_biases] *)
 val update : Owl.Mat.mat array -> Owl.Mat.mat array -> net -> net
