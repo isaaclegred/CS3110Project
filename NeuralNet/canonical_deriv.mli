@@ -1,12 +1,19 @@
-(* Evluate the layers one at a time and store the intermediate results *)
+(** [eval_layers layers input] returns an array [evaluations] that satisfies
+    [evaluations.(i)] = [Layer.run_with_intermediate] [layers.(i)] [evaluations.(i-1)]
+    and [evaluation.(0)] = (input, input)
+*)
 module Mat = Owl.Mat
 val eval_layers :  Layer.t array -> Mat.mat -> (Mat.mat * Mat.mat) array 
 
-(* Now that the function is evaluated at all of the layers computing the derivative is just
-   the linear response of the function to the parameters, the derivative at the last parameters 
-   is simple, because it is the same as a single net case, but evaluated at the result of the net 
-   up to that point.  The second layer is teh same, except then propogated through the 
-   deriivatives  to the left of it.  
+(** Brief : [eval_derivative layers ]
+   
+   Now that the function is evaluated at all of the layers computing the derivative is just
+   the linear response of the function to the parameters, the derivative at 
+   the last parameter 
+   is simple, because it is the same as a single net case, but evaluated at the result 
+   of the net 
+   up to that point.  The second layer is the same, except then propogated through the 
+   derivatives  to the left of it.  
    BEGIN LATEX: 
    $$f(x) = L_n \circ ... L_2 \circ L_0(x)$$
    Where $x$ are the seen values and $y$ are the unseen

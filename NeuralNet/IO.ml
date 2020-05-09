@@ -142,6 +142,6 @@ let write_params ({ path ;
                                       (snd pair |> column_to_csv)::csv) [] p  in 
     Csv.save path new_file; {path; status; params; file = new_file; updated=ref false}
 
-
+(**  Make a params_file *)
 let make_blank_params_file path status=
   {path = path; status = status; params = ref None; file = []; updated =ref false}
