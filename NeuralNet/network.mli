@@ -42,4 +42,6 @@ val print_pre_net : pre_net -> unit
 
 val print_net : net -> unit
 
-val to_parameter_list : net -> (Mat.mat  * Mat.mat) list 
+val to_parameter_list : net -> (Mat.mat * Mat.mat) list
+
+val from_parameter_list : (Mat.mat * Mat.mat) list -> net

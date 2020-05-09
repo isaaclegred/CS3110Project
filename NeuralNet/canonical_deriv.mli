@@ -3,8 +3,8 @@ module Mat = Owl.Mat
 val eval_layers :  Layer.t array -> Mat.mat -> (Mat.mat * Mat.mat) array 
 
 (* Now that the function is evaluated at all of the layers computing the derivative is just
- the linear response of the function to the parameters, the derivative at the last parameters 
-  is simple, because it is the same as a single net case, but evaluated at the result of the net 
+   the linear response of the function to the parameters, the derivative at the last parameters 
+   is simple, because it is the same as a single net case, but evaluated at the result of the net 
    up to that point.  The second layer is teh same, except then propogated through the 
    deriivatives  to the left of it.  
    BEGIN LATEX: 
@@ -23,5 +23,4 @@ val eval_layers :  Layer.t array -> Mat.mat -> (Mat.mat * Mat.mat) array
    END LATEX
 *)
 val eval_derivative :  Layer.t array -> Mat.mat  ->Mat. mat -> (Mat.mat * Mat.mat) array
- -> ((Mat.mat * Mat.mat) * Mat.mat) array 
-  
+  -> ((Mat.mat * Mat.mat) * Mat.mat) array 

@@ -14,7 +14,7 @@ let create input_size output_size = {input_size; output_size; layers = []}
    i.e. the invariant of a pre_net is that all of the weights beloning to the layers
    must be composable into a a valid matrix product that terminates with a matrix that 
    returns [output_size] floats.  No guarantee is made of what is a valid input to 
-   the matrix product. 
+   the matrix product.
 *)
 let add_layer layer {input_size; output_size; layers} =
   let size =
@@ -52,7 +52,7 @@ let run network (inputs:float array) : float array =
   |> Mat.to_array
 
 let run_mat network (inputs:Mat.mat) : Mat.mat =
-   (Array.fold_left Layer.run inputs network)
+  (Array.fold_left Layer.run inputs network)
 
 let prop f g weights biases network =
   let size = Array.length network in
@@ -90,3 +90,12 @@ let print_net = Array.iter Layer.print
 
 let to_parameter_list net =
   Array.fold_left (fun lst layer -> (Layer.get_weights layer,  Layer.get_biases layer)::lst) [] net
+
+let from_parameter_list (params : (Mat.mat * Mat.mat) list) : net =
+  (* TODO Check dimensions *)
+  let act = fun x -> x in
+  let act_deriv = fun x -> 1. in
+  let make bias_size fn = List.init bias_size (fun _ -> fn) in
+  let f (w, b) =
+    Layer.create w b (make (Mat.row_num b) act) (make (Mat.row_num b) act_deriv) in
+  List.map f params |> Array.of_list

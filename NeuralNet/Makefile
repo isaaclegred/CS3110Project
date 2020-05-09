@@ -1,4 +1,4 @@
-MODULES=authors IO layer learning network trainer oneLayer canonical_deriv
+MODULES=authors IO layer learning network trainer canonical_deriv canonical_trainer
 OBJECTS=$(MODULES:=.cmo)
 MLS=$(MODULES:=.ml)
 MLIS=$(MODULES:=.mli)

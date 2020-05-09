@@ -58,15 +58,15 @@ let run input ({weights; biases; activations; activation_derivative} as layer) =
   if M.shape input <> (input_size layer, 1) then
     Invalid_argument "Bad shape" |> raise
   else 
-  let result = M.((input + biases) |> mapi activations) in
-  M.(weights *@ result)
+    let result = M.((input + biases) |> mapi activations) in
+    M.(weights *@ result)
 
 let run_with_intermediate input ({weights; biases; activations; activation_derivative} as layer) =
-      if M.shape input <> (input_size layer, 1) then
+  if M.shape input <> (input_size layer, 1) then
     Invalid_argument "Bad shape" |> raise
   else
-  let partial_result = M.((input + biases) |> mapi activations) in
-  (partial_result, M.(weights *@ partial_result))
+    let partial_result = M.((input + biases) |> mapi activations) in
+    (partial_result, M.(weights *@ partial_result))
 let to_string layer = failwith "Unimplemented" (* TODO *)
 
 let from_string data = failwith "Unimplemented" (* TODO *)
@@ -90,11 +90,8 @@ let print {weights; biases; activations; activation_derivative} =
 
 
 let linearization input {weights; biases; activations; activation_derivative} =
-  print_endline "entered linearization";
   let input_size = fst (M.shape input) in 
-  print_endline (string_of_int M.( shape biases|> fst));
   let act_input = M.(input + biases) in
-  print_endline "got act_input";
   let input_deriv = ref (M.copy weights) in
   let rec loop index =
     match index with
@@ -102,31 +99,24 @@ let linearization input {weights; biases; activations; activation_derivative} =
     | i -> 
       let act_deriv = activation_derivative i M.(get act_input i 0) in
       input_deriv := M.(map_at_col (fun elt -> act_deriv *. elt)  !input_deriv i ); loop (index + 1) in
-   let _ = loop 0 in !input_deriv
+  let _ = loop 0 in !input_deriv
 
 (* The prefactor tells us how the global outputs respond to the local outputs linearly
    the input is the computed input into this layer, since
- *)
+*)
 
 
 let deriv prefactor desired_output actual_output (partial_input, input)
     ({weights; biases; activations; activation_derivative} as layer) =
-  print_endline "entered layer deriv";
   let out_size = layer_size layer in 
   let residuals = M.(actual_output - desired_output) in
   let local_linearization = linearization input layer in
   let total_linearization = M.(prefactor *@ local_linearization) in 
-  print_endline ("completed linearization" ^  (string_of_int M.(shape total_linearization|> snd)));
-  print_endline ("computed residuals" ^  (string_of_int M.(shape residuals|> fst)));
   let bias_derivs = M.(transpose(total_linearization) *@ residuals ) in
-  print_endline ("bias_deriv problem" ^ (string_of_int M.(shape bias_derivs|> fst))) ;
-  print_endline M.(get_biases layer|> shape |> snd |> string_of_int);
   if  snd (M.shape prefactor) <> out_size
   then Invalid_argument "Bad shape in deriv"|> raise  
   else let weighted_residuals = 
          M.(transpose(residuals) *@ prefactor)
     in 
     let weight_deriv =  M.(weighted_residuals * partial_input) in
-    print_endline "completed layer deriv";
     ((M.transpose(weight_deriv), bias_derivs), total_linearization)
-  

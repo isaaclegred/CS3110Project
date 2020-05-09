@@ -11,8 +11,8 @@ let eval_layers (layers : Layer.t array) (input : Mat.mat)  =
   in loop 1;
   evaluated_layers
 (* Now that the function is evaluated at all of the layers computing the derivative is just
- the linear response of the function to the parameters, the derivative at the last parameters 
-  is simple, because it is the same as a single net case, but evaluated at the result of the net 
+   the linear response of the function to the parameters, the derivative at the last parameters 
+   is simple, because it is the same as a single net case, but evaluated at the result of the net 
    up to that point.  The second layer is teh same, except then propogated through the 
    deriivatives  to the left of it.  
    BEGIN LATEX: 
@@ -31,17 +31,15 @@ let eval_layers (layers : Layer.t array) (input : Mat.mat)  =
    END LATEX
 *)
 let eval_derivative layers input desired_output evaluated_layers :
-  ((Mat.mat * Mat.mat) * Mat.mat) array= 
+  ((Mat.mat * Mat.mat) * Mat.mat) array=
   let num_layers = Array.length layers in
-  let out_dim = fst (Mat.shape desired_output) in 
+  let out_dim = fst (Mat.shape desired_output) in
   let evaluated_derivs = Array.make num_layers ((Mat.create 1 1 0.0, (Mat.create 1 1 0.0)),
-  (Mat.create 1 1 0.0) ) in
-  let actual_output = snd evaluated_layers.(num_layers) in 
-  print_endline (string_of_int(fst(Mat.shape (snd(evaluated_layers.(0))))));
+                                                (Mat.create 1 1 0.0) ) in
+  let actual_output = snd evaluated_layers.(num_layers) in
   let rec co_loop index =
     match index with
     | final when final = (num_layers - 1)  ->
-      print_endline "case leftmost";
       evaluated_derivs.(final) <-
         Layer.deriv (Mat.eye out_dim) desired_output actual_output
           (evaluated_layers.(final)) layers.(final);

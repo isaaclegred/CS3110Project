@@ -25,21 +25,27 @@ module type Trainer = sig
   module Out : Data
   module D : Derivative
   type t
-  val learning_rate : float ref
-  val create : In.t -> Out.t  -> t
+  val default_rate : float
+  val create : In.t -> Out.t -> Network.net -> t
   type update_status =
     | Accept of t
     | Reject of t
   val update : t -> update_status
-  val train : t -> t
+  val train : t -> float -> t
   val get_network : t -> Network.net
 end
 
-module type DerivativeMaker =
-  functor (In : Data) -> functor (Out : Data) ->
-    Derivative with module In = In and module Out = Out
+module MakeDerivative (In : Data) (Out : Data) = struct
+  open Canonical_deriv
+  module In = In
+  module Out = Out
+  let eval inputs outputs network =
+    let layers = Network.net_layers network in
+    let evaled_layers = eval_layers layers inputs in
+    let evaled_deriv = eval_derivative layers inputs outputs evaled_layers in
+    Array.map fst evaled_deriv
+end
 
 module type TrainerMaker =
   functor (In : Data) -> functor (Out : Data) ->
-    functor (D : Derivative with module In = In and module Out = Out) ->
-      Trainer with module In = In and module Out = Out and module D = D
+    Trainer with module In = In and module Out = Out
