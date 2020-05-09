@@ -26,11 +26,16 @@ let read path status =
     Some {path; status; data = None; file = Csv.load path}
   with Sys_error _ -> None
 
-let mat_from_list lst =
-  let mat = Mat.zeros 1 (List.length lst) in
+(* get a matrix from a list, so that the resulting matrix has n rows if the length of 
+[lst] is not divisible by [n] throw an exception*)
+let mat_from_list lst n  =
+  if n  mod (List.length lst) <> 0 then raise
+      (Incorrect_Dimension ("This list is not splittable into "^ (string_of_int n) ^" rows"))
+  else 
+  let mat = Mat.zeros n ((List.length lst)/n) in
   let _ =
     List.fold_left (
-      fun idx elt -> let () = Mat.set mat 1 idx elt in idx + 1
+      fun idx elt -> let () = Mat.set mat (idx/n) (idx mod n) elt in idx + 1
     ) 0 lst in
   mat
 
@@ -41,10 +46,12 @@ let process_data_into_mats c =
      but more generally the data being handled such as distance(m) or time(s) *)
   let ind =
     List.map (fun s -> float_of_string s) (List.tl (List.hd lists)) in
-  let ind_mat = mat_from_list ind in
+  let ind_n = List.length ind in
+  let ind_mat = mat_from_list ind ind_n in
   let dep =
     List.map (fun s -> float_of_string s) (List.hd (List.tl (List.tl lists))) in
-  let dep_mat = mat_from_list dep in
+  let dep_n = List.length dep in 
+  let dep_mat = mat_from_list dep dep_n in
   Some (ind_mat, dep_mat)
 
 let unpack_data data_file =
@@ -63,7 +70,7 @@ let unpack_data data_file =
 type param_file = {
   path : string;
   status : file_permission;
-  params : (weights * biases) list option;
+  params : (weights * biases) list option ref ;
   file : csv;
   updated : bool;
 }
@@ -78,25 +85,32 @@ let process_params_into_mats c =
       match lsts with
       | [] -> []
       | weights :: biases :: t ->
+        (* We can use the length of the biases to infer the number of rows in 
+           the weights matrix*)
+        let n = List.length biases in
         let w = List.map (fun s -> float_of_string s) (List.tl weights) in
         let b = List.map (fun s -> float_of_string s) (List.tl biases) in
-        process_helper t ((mat_from_list w, mat_from_list b) :: mats)
+        process_helper t ((mat_from_list w n, mat_from_list b n) :: mats)
       | unmatched :: t -> raise (Incorrect_Dimension ("in file " ^ c)) in
     Some (process_helper lists [])
 
 let unpack_params params_file =
   match params_file with
   | None -> None
-  | Some {path; status; params = Some _; file; updated = false} as f ->
+  | Some {path; status; params = p; file; updated = false} as f when !p <> None   ->
     let () = print_endline "params already extracted" in f
-  | Some {path; status; params = Some _; file; updated = true} ->
+  | Some {path; status; params = p; file; updated = true} when (!p <> None) ->
     let () = print_endline "overwriting updated params" in
     let mat_data = process_params_into_mats path in
-    Some {path; status; params = mat_data; file; updated = false}
-  | Some {path; status; params = None; file; updated} ->
+    let _ = p := mat_data in 
+    Some {path; status; params = p; file; updated = false}
+  | Some {path; status; params = p; file; updated} when !p =None->
     let () = print_endline "extracting params" in
     let mat_data = process_params_into_mats path in
-    Some {path; status; params = mat_data; file; updated = false}
+    let _ =p := mat_data in 
+    Some {path; status; params = p; file; updated = false}
+  | Some {path; status; params = p; file; updated} as f  ->
+    print_endline "undefined_behavior"; f
 
 (* This function should unpack the parameters in the matrices and store them in
    the csv whose path is currently in the path slot. There needs to be some
@@ -111,16 +125,20 @@ let write_params ({ path ;
   match updated with
   | false -> print_endline "writing parameters is unnecesary"; params_file
   | true ->
-    match params with
+    match !params with
     | None -> print_endline "no parameters to write"; params_file
     | Some p ->
+    let column_to_csv col = Mat.fold_rows (fun lst elt ->
+      (string_of_float (Mat.get elt 0 0))::lst) [] col in
     let row_to_list row = Mat.fold_cols (fun lst elt ->
       (string_of_float (Mat.get elt 0 0))::lst) [] row in
     let mat_to_csv mat = Mat.fold_rows (fun lst row ->
-        ((row_to_list row)::lst)) []  mat in 
+        ((row_to_list row)@lst)) []  mat in 
     let new_file  =
-      List.fold_left (fun csv pair -> (fst pair |> mat_to_csv)@[]@
-                                      (snd pair |> mat_to_csv)@[]::csv) [] p  in 
+      List.fold_left (fun csv pair -> (fst pair |> mat_to_csv)::
+                                      (snd pair |> column_to_csv)::csv) [] p  in 
     Csv.save path new_file; {path; status; params; file = new_file; updated=false}
 
 
+let make_blank_params_file path status=
+  {path = path; status = status; params = ref None; file = []; updated=false}
