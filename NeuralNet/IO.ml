@@ -29,13 +29,16 @@ let read path status =
 (* get a matrix from a list, so that the resulting matrix has n rows if the length of 
 [lst] is not divisible by [n] throw an exception*)
 let mat_from_list lst n  =
-  if n  mod (List.length lst) <> 0 then raise
+  let index_fun max n id = if max = n then (id, 0) else (id/(max/n), id mod (max/n))  in
+  if (List.length lst)  mod n  <> 0 then raise
       (Incorrect_Dimension ("This list is not splittable into "^ (string_of_int n) ^" rows"))
-  else 
-  let mat = Mat.zeros n ((List.length lst)/n) in
+  else
+    let max = List.length lst in
+    let mat = Mat.zeros n ((max)/n) in
   let _ =
     List.fold_left (
-      fun idx elt -> let () = Mat.set mat (idx/n) (idx mod n) elt in idx + 1
+      fun idx elt -> let () = let id = index_fun max n idx in  Mat.set mat (fst id) (snd id)
+                         elt in idx + 1
     ) 0 lst in
   mat
 
@@ -72,7 +75,7 @@ type param_file = {
   status : file_permission;
   params : (weights * biases) list option ref ;
   file : csv;
-  updated : bool;
+  updated : bool ref;
 }
 
 let process_params_into_mats c =
@@ -83,13 +86,13 @@ let process_params_into_mats c =
   else
     let rec process_helper lsts mats =
       match lsts with
-      | [] -> []
+      | [] -> mats
       | weights :: biases :: t ->
         (* We can use the length of the biases to infer the number of rows in 
            the weights matrix*)
         let n = List.length biases in
-        let w = List.map (fun s -> float_of_string s) (List.tl weights) in
-        let b = List.map (fun s -> float_of_string s) (List.tl biases) in
+        let w = List.map (fun s -> float_of_string s) ( weights) in
+        let b = List.map (fun s -> float_of_string s) (biases) in
         process_helper t ((mat_from_list w n, mat_from_list b n) :: mats)
       | unmatched :: t -> raise (Incorrect_Dimension ("in file " ^ c)) in
     Some (process_helper lists [])
@@ -97,18 +100,18 @@ let process_params_into_mats c =
 let unpack_params params_file =
   match params_file with
   | None -> None
-  | Some {path; status; params = p; file; updated = false} as f when !p <> None   ->
+  | Some {path; status; params = p; file; updated = fal} as f when !fal = false && !p <> None   ->
     let () = print_endline "params already extracted" in f
-  | Some {path; status; params = p; file; updated = true} when (!p <> None) ->
+  | Some {path; status; params = p; file; updated = tru} when (!tru = true && !p <> None) ->
     let () = print_endline "overwriting updated params" in
     let mat_data = process_params_into_mats path in
     let _ = p := mat_data in 
-    Some {path; status; params = p; file; updated = false}
+    Some {path; status; params = p; file; updated = ref false} 
   | Some {path; status; params = p; file; updated} when !p =None->
     let () = print_endline "extracting params" in
     let mat_data = process_params_into_mats path in
     let _ =p := mat_data in 
-    Some {path; status; params = p; file; updated = false}
+    Some {path; status; params = p; file; updated = ref false}
   | Some {path; status; params = p; file; updated} as f  ->
     print_endline "undefined_behavior"; f
 
@@ -122,7 +125,7 @@ let write_params ({ path ;
   file ;
   updated;
 } as params_file) =
-  match updated with
+  match !updated with
   | false -> print_endline "writing parameters is unnecesary"; params_file
   | true ->
     match !params with
@@ -137,8 +140,8 @@ let write_params ({ path ;
     let new_file  =
       List.fold_left (fun csv pair -> (fst pair |> mat_to_csv)::
                                       (snd pair |> column_to_csv)::csv) [] p  in 
-    Csv.save path new_file; {path; status; params; file = new_file; updated=false}
+    Csv.save path new_file; {path; status; params; file = new_file; updated=ref false}
 
 
 let make_blank_params_file path status=
-  {path = path; status = status; params = ref None; file = []; updated=false}
+  {path = path; status = status; params = ref None; file = []; updated =ref false}
