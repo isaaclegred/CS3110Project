@@ -102,5 +102,25 @@ let unpack_params params_file =
    the csv whose path is currently in the path slot. There needs to be some
    check to see if the file was opened with write permission, and there should
    also be a check to see if the data has been updated, becasue if not... *)
-let write_params params_file =
-  failwith "Unimplemented"
+let write_params ({ path ;
+  status;
+  params;
+  file ;
+  updated;
+} as params_file) =
+  match updated with
+  | false -> print_endline "writing parameters is unnecesary"; params_file
+  | true ->
+    match params with
+    | None -> print_endline "no parameters to write"; params_file
+    | Some p ->
+    let row_to_list row = Mat.fold_cols (fun lst elt ->
+      (string_of_float (Mat.get elt 0 0))::lst) [] row in
+    let mat_to_csv mat = Mat.fold_rows (fun lst row ->
+        ((row_to_list row)::lst)) []  mat in 
+    let new_file  =
+      List.fold_left (fun csv pair -> (fst pair |> mat_to_csv)@[]@
+                                      (snd pair |> mat_to_csv)@[]::csv) [] p  in 
+    Csv.save path new_file; {path; status; params; file = new_file; updated=false}
+
+

@@ -88,3 +88,5 @@ let print_pre_net {input_size; output_size; layers} =
 
 let print_net = Array.iter Layer.print
 
+let to_parameter_list net =
+  Array.map (fun layer -> (Layer.get_weights layer,  Layer.get_biases layer)) net
