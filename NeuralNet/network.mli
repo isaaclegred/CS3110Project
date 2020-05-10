@@ -7,9 +7,9 @@ type pre_net
 type net
 
 (** [create input_size output_size] is a [pre_net] that takes in input of size
-    [input_size] and gives out output of size [output_size]. 
+    [input_size] and gives out output of size [output_size].
 
-    Requires: *)
+    Raises: [Invalid_argument] if either size is negative. *)
 val create : int -> int -> pre_net
 
 (** [add_layer layer pre_net] is [pre_net] but with [layer] tacked on.
@@ -18,7 +18,11 @@ val create : int -> int -> pre_net
     of [pre_net]'s tail. *)
 val add_layer : Layer.t -> pre_net -> pre_net
 
-val seal : Layer.t -> pre_net -> net
+(** [seal pre_net] is [pre_net] but as a [net].
+
+    Raises: [Invalid_argument] if the shape of [layer] does not match the shape
+    of [pre_net]'s tail. *)
+val seal : pre_net -> net
 
 val input_size : net -> int
 

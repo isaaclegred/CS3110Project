@@ -14,7 +14,7 @@ module Make (In : Data) (Out : Data) = struct
     rate : float;
   }
 
-  let default_rate : float = 0.001 (* Arbitrarily chosen *)
+  let default_rate : float = 0.01 (* Arbitrarily chosen *)
 
   let create (ins : In.t) (outs : Out.t) (network : Network.net) : t =
     let to_mat arr size = arr |> Mat.of_array size 1 |> Mat.transpose in

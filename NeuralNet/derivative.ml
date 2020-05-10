@@ -1,10 +1,8 @@
 module Mat = Owl.Mat
 
 (** [eval_layers input layers] is an array [values] of length
-    [Array.length layers + 1] that satisfies the following conditions:
-    - [values.(0) = (input, input)], and
-    - for [1 <= i < Array.length layers + 1], [values.(i) =
-      Layer.run_with_intermediate (snd values.(i - 1)) layers.(i - 1)].
+    [Array.length layers + 1] that contains results of pushing [input] across
+    [layers].
 
     Note that [values] does not share mutable elements with the inputs, so it
     is safe to modify anything you want after the call.
