@@ -5,8 +5,15 @@
    demonstrates the correctness of your system. *)
 
 open OUnit2
-
 module Mat = Owl.Mat
+
+let string_of_mat = Owl_pretty.dsnda_to_string
+let make_mat_equality_test
+    (name : string)
+    (expected : Mat.mat)
+    (actual : Mat.mat)
+  : test =
+  name >:: (fun _ -> assert_equal expected actual ~printer:string_of_mat)
 
 (* IO Tests *)
 

@@ -1,8 +1,6 @@
 module Mat = Owl.Mat
 
 type file_permission = R | RW
-(* Independent data represents time steps the solution is evaluated at, must
-   be strictly increasing *)
 type independent_data = Mat.mat
 type dependent_data = Mat.mat
 (* Params can be either weights or biases *)
@@ -26,8 +24,6 @@ let read path status =
     Some {path; status; data = None; file = Csv.load path}
   with Sys_error _ -> None
 
-(** Get a matrix from a list, so that the resulting matrix has [n] rows; if the
-    length of [lst] is not divisible by [n] throw an exception *)
 let mat_from_list lst n =
   let index_fun max n id =
     if max = n then id, 0 else id / (max / n), id mod (max / n) in
@@ -44,20 +40,18 @@ let mat_from_list lst n =
     let _ = List.fold_left f 0 lst in
     mat
 
-(* TODO List.hd and List.tl are highly discouraged! *)
-let process_data_into_mats c =
-  let lists = Csv.load c in
-  (* Require a single word identifier for the data in the csv such as ind, dep;
-     but more generally the data being handled such as distance(m) or time(s) *)
-  let ind = List.map float_of_string (List.tl (List.hd lists)) in
-  let ind_n = List.length ind in
-  let ind_mat = mat_from_list ind ind_n in
-  let dep = List.map float_of_string (List.hd (List.tl (List.tl lists))) in
-  let dep_n = List.length dep in
-  let dep_mat = mat_from_list dep dep_n in
-  Some (ind_mat, dep_mat)
-
 let unpack_data data_file =
+  let process_data_into_mats c =
+    let lists = Csv.load c in
+    (* Need a single word identifier for the data in the csv such as ind, dep;
+       but generally the data being handled such as distance(m) or time(s). *)
+    let ind = List.map float_of_string (List.tl (List.hd lists)) in
+    let ind_n = List.length ind in
+    let ind_mat = mat_from_list ind ind_n in
+    let dep = List.map float_of_string (List.hd (List.tl (List.tl lists))) in
+    let dep_n = List.length dep in
+    let dep_mat = mat_from_list dep dep_n in
+    Some (ind_mat, dep_mat) in
   match data_file with
   | None -> None
   | Some {path; status; data = Some _; file} as f ->
@@ -67,9 +61,6 @@ let unpack_data data_file =
     let mat_data = process_data_into_mats path in
     Some {path; status; data = mat_data; file}
 
-(** Will hold parameters, to be stored/extracted; [updated] is used to flag when
-    the parameters that were extracted from this file have been updated so that
-    the user can easily see if they need to be rewritten *)
 type param_file = {
   path : string;
   status : file_permission;
@@ -113,10 +104,10 @@ let unpack_params params_file =
     Some {path; status; params; file; updated = ref false}
   | f -> print_endline "undefined behavior"; f
 
-(** This function should unpack the parameters in the matrices and store them in
-    the csv whose path is currently in the path slot. There needs to be some
-    check to see if the file was opened with write permission, and there should
-    also be a check to see if the data has been updated, because if not... *)
+(* This function should unpack the parameters in the matrices and store them in
+   the csv whose path is currently in the path slot. There needs to be some
+   check to see if the file was opened with write permission, and there should
+   also be a check to see if the data has been updated, because if not... *)
 let write_params ({path; status; params; file; updated} as params_file) =
   match !updated with
   | false -> print_endline "writing parameters is unnecesary"; params_file
@@ -135,6 +126,5 @@ let write_params ({path; status; params; file; updated} as params_file) =
         {path; status; params; file = new_file; updated = ref false}
     end
 
-(** Make a params_file *)
 let make_blank_params_file path status =
   {path; status; params = ref None; file = []; updated = ref false}

@@ -1,3 +1,5 @@
+(** Computes the derivative of the cost function of a network. *)
+
 (** [eval input output network] is an array [derivs] of length
     [network |> Network.net_layers |> Array.length], whose [i]th entry is
     [(weight_deriv, bias_deriv)], where

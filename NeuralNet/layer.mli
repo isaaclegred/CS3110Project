@@ -1,3 +1,5 @@
+(** A layer within a neural network. *)
+
 (** A [t] is a layer in a neural network. Abstractly, it represents a map from
     a vector of [input_size] floats to a vector of [layer_size] floats. In more
     depth, it is a combination of a vector addition with [get_biases], a matrix

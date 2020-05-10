@@ -1,9 +1,21 @@
+(** A neural network and associated functions. *)
+
+(** The type of incomplete neural networks. *)
 type pre_net
 
+(** The type of complete neural networks. *)
 type net
 
+(** [create input_size output_size] is a [pre_net] that takes in input of size
+    [input_size] and gives out output of size [output_size]. 
+
+    Requires: *)
 val create : int -> int -> pre_net
 
+(** [add_layer layer pre_net] is [pre_net] but with [layer] tacked on.
+
+    Raises: [Invalid_argument] if the shape of [layer] does not match the shape
+    of [pre_net]'s tail. *)
 val add_layer : Layer.t -> pre_net -> pre_net
 
 val seal : Layer.t -> pre_net -> net
@@ -12,7 +24,7 @@ val input_size : net -> int
 
 val output_size : net -> int
 
-(** Run the neural net [network] on the float array [inputs] to get predicted
+(** [run network] runs the neural net [network] on the float array [inputs] to get predicted
     outputs. *)
 val run : net -> float array -> float array
 

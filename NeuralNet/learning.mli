@@ -1,3 +1,5 @@
+(** Sample implementation of a neural network for demoing/testing. *)
+
 (** [run_test input_size output_size iterations noise f] is a sample net that
     takes in input of size [input_size], output of size [output_size], and has
     been trained [iterations] many times on data following a trend defined by
