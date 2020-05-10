@@ -5,29 +5,20 @@
 module Mat = Owl.Mat
 val eval_layers :  Layer.t array -> Mat.mat -> (Mat.mat * Mat.mat) array 
 
-(** Brief : [eval_derivative layers ]
+(** Brief : [eval_derivative layers input target_output evaluated_layers] is an
+    array [derivs] of [((weight_deriv, bias_deriv), linearization)]s
+    Details : The basic principle of the neural net is that each layer is its own 
+    function from inputs -> outputs and when streamed together, become one large 
+    function [input -> input_1 -> input_2 -> input_3 -> predicted_output] where 
+    each [->] represents a layer.  In order to adjust the model via training, it
+    is necessary to know how [predicted_output] responds to changes in each of 
+    the layers.  [weight_deriv] is the derivative of the cost function
+    with respect to the weights of the layer, [bias_deriv] derivative of the
+    cost function with respect to the biases of this layer, and [linearization]
+    is the derivative of [input_i] with respect to [input_{i-1}] for layer i. 
+
+    
    
-   Now that the function is evaluated at all of the layers computing the derivative is just
-   the linear response of the function to the parameters, the derivative at 
-   the last parameter 
-   is simple, because it is the same as a single net case, but evaluated at the result 
-   of the net 
-   up to that point.  The second layer is the same, except then propogated through the 
-   derivatives  to the left of it.  
-   BEGIN LATEX: 
-   $$f(x) = L_n \circ ... L_2 \circ L_0(x)$$
-   Where $x$ are the seen values and $y$ are the unseen
-   $$\text{def} \,\,\, f_i(x) := L_i \circ L_{i-1} \circ ... L_0(x) $$ So $f_n(x) =f(x)$, 
-   note: this can be evaluated recursively from the ``right"
-   $$\frac{\partial f}{\partial L_i} f(x) = L_n'(f_{n-1}(x)) \times 
-   L_{n-1}'(f_{n-2}(x)\times ... L_i'(f_{i-1}(x)))  $$
-   Note: This can be evaluated recursively from the ``left" 
-   because we already know all the $f_i'$
-   There Should be a function inside layer which is \texttt{compute\_layer\_derivative layer 
-   f\_i} it is exactly the same as the functions for computing bias derivative and weight 
-   derivatives as before, and can be extended to have a sigmoid derivative by just composing 
-   with the derivative of the sigmoid derivative afterward. 
-   END LATEX
 *)
 val eval_derivative :  Layer.t array -> Mat.mat  ->Mat. mat -> (Mat.mat * Mat.mat) array
   -> ((Mat.mat * Mat.mat) * Mat.mat) array 

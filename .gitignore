@@ -13,3 +13,6 @@
 *.synctex.gz*
 # .DS_Store
 .DS_Store
+
+# Ignore docs
+*doc*
