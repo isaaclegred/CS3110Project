@@ -1,4 +1,4 @@
-MODULES=authors IO layer learning network trainer derivative canonical_trainer
+MODULES=authors IO layer learning network trainer derivative defaultTrainer
 OBJECTS=$(MODULES:=.cmo)
 MLS=$(MODULES:=.ml)
 MLIS=$(MODULES:=.mli)

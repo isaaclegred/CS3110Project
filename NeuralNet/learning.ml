@@ -21,7 +21,7 @@ let run_test input_size output_size iterations noise f =
   end
   in
 
-  let module OneLayerT = Canonical_trainer.Make(In)(Out)
+  let module OneLayerT = DefaultTrainer.Make(In)(Out)
   in
 
   (* Create an array of length [In.size + Out.size], whose entries are [f t]
