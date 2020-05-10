@@ -1,18 +1,23 @@
 # Ignore editor files
 *~*
 *#*
+
 # Build directories
 *build*
-# latex compiler files
+
+# Latex compiler files
 *.pdf*
 *.aux*
 *.log*
 *auto*
 *.out*
-
 *.synctex.gz*
+
 # .DS_Store
 .DS_Store
 
 # Ignore docs
 *doc*
+
+# Ignore binaries
+*.byte

@@ -101,15 +101,6 @@ let to_parameter_list (net : net) : (Mat.mat * Mat.mat) list =
   Array.fold_left f [] net
 
 let from_parameter_list (params : (Mat.mat * Mat.mat) list) : net =
-  (* TODO Check dimensions *)
-  let act = fun x -> x in
-  let act_deriv = fun x -> 1. in
-  let make b f = List.init (Mat.row_num b) (fun _ -> f) in
-  let f (w, b) = Layer.create w b (make b act) (make b act_deriv) in
-  List.map f params |> Array.of_list
-
-let from_parameter_list (params : (Mat.mat * Mat.mat) list) : net =
-  (* TODO Check dimensions *)
   let params = Array.of_list params in
   let act x = x in
   let act_deriv _ = 1. in
