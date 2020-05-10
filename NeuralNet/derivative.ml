@@ -58,7 +58,9 @@ let eval_derivative
     (input : Mat.mat) (desired_output : Mat.mat) (layers : Layer.t array)
   : ((Mat.mat * Mat.mat) * Mat.mat) array =
   let num_layers = Array.length layers in
-  if num_layers = 0 then [||] else
+  if num_layers = 0 then
+    [||]
+  else
     let values = eval_layers input layers in
     let true_output = snd values.(num_layers) in
     let deriv i prefactor =
