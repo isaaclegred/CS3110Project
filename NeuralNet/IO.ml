@@ -128,3 +128,7 @@ let write_params ({path; status; params; file; updated} as params_file) =
 
 let make_blank_params_file path status =
   {path; status; params = ref None; file = []; updated = ref false}
+
+let update_params {path; status; params; file; updated } new_params =
+  params := new_params; updated := true; ()
+  
