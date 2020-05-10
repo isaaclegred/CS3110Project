@@ -22,8 +22,8 @@ let create
     let acts = Array.of_list acts in
     let act_derivs = Array.of_list act_derivs in
     {
-      weights;
-      biases;
+      weights = Mat.copy weights;
+      biases = Mat.copy biases;
       activations = Array.get acts;
       activation_derivative = Array.get act_derivs;
     }

@@ -1,3 +1,9 @@
+(* At the top of your test file, which should be named test.ml or something
+   very similar so that the grader can find it, please write a (potentially
+   lengthy) comment describing your approach to testing: what you tested,
+   anything you omitted testing, and why you believe that your test suite
+   demonstrates the correctness of your system. *)
+
 open OUnit2
 
 (* IO Tests *)
@@ -21,7 +27,8 @@ let io_tests = [
 (* Layer tests *)
 
 let layer_tests = [
-
+  "The empty dict has size 0" >:: (fun _ ->
+      assert_equal 0 (D.size empty));
 ]
 
 (* Network tests *)
