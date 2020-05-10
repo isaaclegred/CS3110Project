@@ -1,7 +1,6 @@
 type pre_net
 
 type net
-module Mat = Owl.Mat
 
 val create : int -> int -> pre_net
 
@@ -13,12 +12,14 @@ val input_size : net -> int
 
 val output_size : net -> int
 
-(** Run the neural net [network] on the float array [inputs] to get predicted outputs  *)
+(** Run the neural net [network] on the float array [inputs] to get predicted
+    outputs. *)
 val run : net -> float array -> float array
 
-val run_mat : net -> Mat.mat -> Mat.mat
+val run_mat : net -> Owl.Mat.mat -> Owl.Mat.mat
 
-(** Set the new weights and biases  of the net [network] to [new_weights] and [new_biases] *)
+(** Set the new weights and biases of the net [network] to [new_weights] and
+    [new_biases]. *)
 val update : Owl.Mat.mat array -> Owl.Mat.mat array -> net -> net
 
 val incr : Owl.Mat.mat array -> Owl.Mat.mat array -> net -> net
@@ -42,6 +43,6 @@ val print_pre_net : pre_net -> unit
 
 val print_net : net -> unit
 
-val to_parameter_list : net -> (Mat.mat * Mat.mat) list
+val to_parameter_list : net -> (Owl.Mat.mat * Owl.Mat.mat) list
 
-val from_parameter_list : (Mat.mat * Mat.mat) list -> net
+val from_parameter_list : (Owl.Mat.mat * Owl.Mat.mat) list -> net

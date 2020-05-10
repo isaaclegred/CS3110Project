@@ -4,9 +4,10 @@
 #require "Owl";;
 #load_rec "IO.cmo";;
 #load_rec "layer.cmo";;
-#load_rec "learning.cmo";;
 #load_rec "network.cmo";;
-#load_rec "trainer.cmo";;
 #load_rec "derivative.cmo";;
+#load_rec "trainer.cmo";;
 #load_rec "defaultTrainer.cmo";;
+#load_rec "learning.cmo";;
 open Learning;;
+let _ = run_test 9 1 1000 0.05 (fun x -> x ** 2.);;
