@@ -7,6 +7,6 @@
 #load_rec "learning.cmo";;
 #load_rec "network.cmo";;
 #load_rec "trainer.cmo";;
-#load_rec "canonical_deriv.cmo";;
+#load_rec "derivative.cmo";;
 #load_rec "canonical_trainer.cmo";;
 open Learning;;
