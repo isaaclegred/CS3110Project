@@ -47,11 +47,14 @@ let change_weights
     (new_weights : Mat.mat)
     ({weights; biases; activations; activation_derivative} as layer : t)
   : t =
-  let weights = f weights new_weights in
-  if Mat.shape weights <> (layer_size layer, input_size layer) then
+  try
+    let weights = f weights new_weights in
+    if Mat.shape weights <> (layer_size layer, input_size layer) then
+      Invalid_argument "Bad shape weights" |> raise
+    else
+      {weights; biases; activations; activation_derivative}
+  with Owl_exception.NOT_BROADCASTABLE ->
     Invalid_argument "Bad shape weights" |> raise
-  else
-    {weights; biases; activations; activation_derivative}
 
 let set_weights : Mat.mat -> t -> t =
   change_weights (fun _ -> Mat.copy)
@@ -70,10 +73,13 @@ let change_biases
     (new_biases : Mat.mat)
     ({weights; biases; activations; activation_derivative} as layer : t)
   : t =
-  let biases = f biases new_biases in
-  if Mat.shape biases <> (input_size layer, 1) then
-    Invalid_argument "Bad shape biases" |> raise
-  else {weights; biases; activations; activation_derivative}
+  try
+    let biases = f biases new_biases in
+    if Mat.shape biases <> (input_size layer, 1) then
+      Invalid_argument "Bad shape biases" |> raise
+    else {weights; biases; activations; activation_derivative}
+  with Owl_exception.NOT_BROADCASTABLE ->
+    Invalid_argument "Bad shape weights" |> raise
 
 let set_biases : Mat.mat -> t -> t =
   change_biases (fun _ -> Mat.copy)

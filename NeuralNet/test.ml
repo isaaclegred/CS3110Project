@@ -140,23 +140,151 @@ let layer_tests = [
       assert_equal (Mat.create 2 1 3110.) (Layer.get_biases layer_12));
   "12 has two activations" >:: (fun _ ->
       assert_equal 2 (Layer.get_activations layer_12 |> List.length));
+  (* 20 getters *)
+  "20 has input size 0" >:: (fun _ ->
+      assert_equal 0 (Layer.input_size layer_20));
+  "20 has layer size 2" >:: (fun _ ->
+      assert_equal 2 (Layer.layer_size layer_20));
+  "20 has 20 weights" >:: (fun _ ->
+      assert_equal (Mat.create 2 0 0.) (Layer.get_weights layer_20));
+  "20 has 01 biases" >:: (fun _ ->
+      assert_equal (Mat.create 0 1 0.) (Layer.get_biases layer_20));
+  "20 has zero activations" >:: (fun _ ->
+      assert_equal 0 (Layer.get_activations layer_20 |> List.length));
+  (* 21 getters *)
+  "21 has input size 1" >:: (fun _ ->
+      assert_equal 1 (Layer.input_size layer_21));
+  "21 has layer size 2" >:: (fun _ ->
+      assert_equal 2 (Layer.layer_size layer_21));
+  "21 has 21 weights" >:: (fun _ ->
+      assert_equal (Mat.create 2 1 3110.) (Layer.get_weights layer_21));
+  "21 has 11 biases" >:: (fun _ ->
+      assert_equal (Mat.create 1 1 3110.) (Layer.get_biases layer_21));
+  "21 has one activation" >:: (fun _ ->
+      assert_equal 1 (Layer.get_activations layer_21 |> List.length));
+  (* 22 getters *)
+  "22 has input size 2" >:: (fun _ ->
+      assert_equal 2 (Layer.input_size layer_22));
+  "22 has layer size 2" >:: (fun _ ->
+      assert_equal 2 (Layer.layer_size layer_22));
+  "22 has 22 weights" >:: (fun _ ->
+      assert_equal (Mat.create 2 2 3110.) (Layer.get_weights layer_22));
+  "22 has 21 biases" >:: (fun _ ->
+      assert_equal (Mat.create 2 1 3110.) (Layer.get_biases layer_22));
+  "22 has two activations" >:: (fun _ ->
+      assert_equal 2 (Layer.get_activations layer_22 |> List.length));
+  (* Test exceptions *)
+  "Bad biases length" >:: (fun _ ->
+      assert_raises (Invalid_argument "Shapes do not match")
+        (fun () -> Layer.create mat_12 mat_11 [f; f] [f'; f']));
+  "Bad biases length and biases not a column vector" >:: (fun _ ->
+      assert_raises (Invalid_argument "Shapes do not match")
+        (fun () -> Layer.create mat_12 mat_12 [f; f] [f'; f']));
+  "Biases not a column vector" >:: (fun _ ->
+      assert_raises (Invalid_argument "Shapes do not match")
+        (fun () -> Layer.create mat_12 mat_22 [f; f] [f'; f']));
+  "Bad acts and act_derivs length" >:: (fun _ ->
+      assert_raises (Invalid_argument "Shapes do not match")
+        (fun () -> Layer.create mat_12 mat_21 [f] [f']));
+  "Mismatched acts and act_derivs length" >:: (fun _ ->
+      assert_raises (Invalid_argument "Shapes do not match")
+        (fun () -> Layer.create mat_12 mat_21 [f] [f'; f']));
 ]
+
+let random_layer_test i =
+  let m = Random.int (i + 1) + 1 in
+  let n = Random.int (i + 1) + 1 in
+  let weights = Mat.uniform m n in
+  let biases = Mat.uniform n 1 in
+  let acts = List.init n (fun _ x -> x) in
+  let act_derivs = List.init n (fun _ _ -> 1.) in
+  let layer = Layer.create weights biases acts act_derivs in
+  let new_weights = Mat.uniform m n in
+  let bad_weights = Mat.uniform (m + 1) (n + 1) in
+  let new_biases = Mat.uniform n 1 in
+  let bad_biases = Mat.uniform n 2 in
+  let bad_acts = List.init (n + 1) (fun _ x -> x) in
+  let bad_act_derivs = List.init (n + 1) (fun _ _ -> 1.) in
+  [
+    "input_size" >:: (fun _ ->
+        assert_equal n (Layer.input_size layer));
+    "layer_size" >:: (fun _ ->
+        assert_equal m (Layer.layer_size layer));
+    "get_weights" >:: (fun _ ->
+        assert_equal weights (Layer.get_weights layer));
+    "set_weights" >:: (fun _ ->
+        assert_equal
+          new_weights
+          (layer |> Layer.set_weights new_weights |> Layer.get_weights));
+    "set_weights fail" >:: (fun _ ->
+        assert_raises
+          (Invalid_argument "Bad shape weights")
+          (fun () -> layer |> Layer.set_weights bad_weights));
+    "incr_weights" >:: (fun _ ->
+        assert_equal
+          Mat.(weights + new_weights)
+          (layer |> Layer.incr_weights new_weights |> Layer.get_weights));
+    "incr_weights fail" >:: (fun _ ->
+        assert_raises
+          (Invalid_argument "Bad shape weights")
+          (fun () -> layer |> Layer.incr_weights bad_weights));
+    "decr_weights" >:: (fun _ ->
+        assert_equal
+          Mat.(weights - new_weights)
+          (layer |> Layer.decr_weights new_weights |> Layer.get_weights));
+    "decr_weights fail" >:: (fun _ ->
+        assert_raises
+          (Invalid_argument "Bad shape weights")
+          (fun () -> layer |> Layer.decr_weights bad_weights));
+    "get_biases" >:: (fun _ ->
+        assert_equal biases (Layer.get_biases layer));
+    "set_biases" >:: (fun _ ->
+        assert_equal
+          new_biases
+          (layer |> Layer.set_biases new_biases |> Layer.get_biases));
+    "set_biases fail" >:: (fun _ ->
+        assert_raises
+          (Invalid_argument "Bad shape biases")
+          (fun () -> layer |> Layer.set_biases bad_biases));
+    "incr_biases" >:: (fun _ ->
+        assert_equal
+          Mat.(biases + new_biases)
+          (layer |> Layer.incr_biases new_biases |> Layer.get_biases));
+    "incr_biases fail" >:: (fun _ ->
+        assert_raises
+          (Invalid_argument "Bad shape biases")
+          (fun () -> layer |> Layer.incr_biases bad_biases));
+    "decr_biases" >:: (fun _ ->
+        assert_equal
+          Mat.(biases - new_biases)
+          (layer |> Layer.decr_biases new_biases |> Layer.get_biases));
+    "decr_biases fail" >:: (fun _ ->
+        assert_raises
+          (Invalid_argument "Bad shape biases")
+          (fun () -> layer |> Layer.decr_biases bad_biases));
+    "get_activations" >:: (fun _ ->
+        assert_equal n
+          (layer |> Layer.get_activations |> List.length));
+    "set_activations" >:: (fun _ ->
+        assert_equal n
+          (layer
+           |> Layer.set_activations acts act_derivs
+           |> Layer.get_activations
+           |> List.length));
+    "set_activations fail" >:: (fun _ ->
+        assert_raises
+          (Invalid_argument "Shapes do not match")
+          (fun () -> layer |> Layer.set_activations bad_acts bad_act_derivs));
+    "copy not physically equal" >:: (fun _ ->
+        assert_bool "copy !=" (layer != Layer.copy layer));
+  ]
+
+let random_layer_tests n =
+  random_layer_test |> List.init n |> List.flatten
 
 (* Network tests *)
 
 let network_tests = [
-
-]
-
-(* Derivative tests *)
-
-let derivative_tests = [
-
-]
-
-(* DefaultTrainer tests *)
-
-let default_trainer_tests = [
 
 ]
 
@@ -165,9 +293,8 @@ let default_trainer_tests = [
 let tests = [
   (* io_tests; *)
   layer_tests;
+  random_layer_tests 10;
   network_tests;
-  derivative_tests;
-  default_trainer_tests;
 ]
 
 let suite = "project test suite" >::: List.flatten tests
