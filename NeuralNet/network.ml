@@ -8,15 +8,15 @@ type pre_net = {
 
 type net = Layer.t array
 
-let create input_size output_size = {input_size; output_size; layers = []}
+let create (input_size : int) (output_size : int) : pre_net =
+  {input_size; output_size; layers = []}
 
-(* A layer added to a pre_net must agree with all the layers that came before it,
-   i.e. the invariant of a pre_net is that all of the weights beloning to the layers
-   must be composable into a a valid matrix product that terminates with a matrix that
-   returns [output_size] floats.  No guarantee is made of what is a valid input to
-   the matrix product.
-*)
-let add_layer layer {input_size; output_size; layers} =
+(** A layer added to a pre_net must agree with all the layers that came before
+    it, i.e. the invariant of a pre_net is that all of the weights belonging to
+    the layers must be composable into a a valid matrix product that terminates
+    with a matrix that returns [output_size] floats. No guarantee is made as to
+    what forms a valid input to the matrix product. *)
+let add_layer (layer : Layer.t) {input_size; output_size; layers} : pre_net =
   let size =
     match layers with
     | [] -> input_size
@@ -25,11 +25,11 @@ let add_layer layer {input_size; output_size; layers} =
     Invalid_argument "Layer has bad input shape" |> raise
   else {input_size; output_size; layers = layer :: layers}
 
-(* Add the final layer to the neural net, the resulting map must take [input_size]
-   to [output_size] floats.  A network can be seen as a pre_net with an additional
-   condition that the matrix product of weights takes arguments of size [input_size]
-*)
-let seal layer pre_network =
+(** Add the final layer to the neural net; the resulting map must take
+    [input_size] to [output_size] floats. A network can be seen as a pre_net
+    with an additional condition that the matrix product of weights takes
+    arguments of size [input_size]. *)
+let seal (layer : Layer.t) (pre_network : pre_net) : net =
   let {input_size; output_size; layers} = add_layer layer pre_network in
   let size =
     match layers with
@@ -37,63 +37,84 @@ let seal layer pre_network =
     | h :: t -> Layer.layer_size h in
   if size <> output_size then
     Invalid_argument "Layer has bad input shape" |> raise
-  else layers |> List.rev |> Array.of_list
+  else
+    layers
+    |> List.rev
+    |> Array.of_list
 
-let input_size network = Layer.input_size network.(0)
+let input_size (network : net) : int =
+  Layer.input_size network.(0)
 
-let output_size network = Layer.layer_size network.(Array.length network - 1)
+let output_size (network : net) : int =
+  Layer.layer_size network.(Array.length network - 1)
 
-let run network (inputs:float array) : float array =
+let run (network : net) (inputs : float array) : float array =
   inputs
   |> (fun arr -> Mat.of_array arr (Array.length arr) 1)
   |> (fun mat -> Array.fold_left Layer.run mat network)
   |> Mat.to_array
 
-let run_mat network (inputs:Mat.mat) : Mat.mat =
-  (Array.fold_left Layer.run inputs network)
+let run_mat (network : net) (inputs : Mat.mat) : Mat.mat =
+  Array.fold_left Layer.run inputs network
 
 let prop f g weights biases network =
   let size = Array.length network in
   if Array.length weights <> size || Array.length biases <> size then
     Invalid_argument "Invalid sizes" |> raise
-  else Array.mapi (fun i x -> x |> f weights.(i) |> g biases.(i)) network
+  else
+    Array.mapi (fun i x -> x |> f weights.(i) |> g biases.(i)) network
 
-let update = prop Layer.set_weights Layer.set_biases
+let update : Mat.mat array -> Mat.mat array -> net -> net =
+  prop Layer.set_weights Layer.set_biases
 
-let incr = prop Layer.incr_weights Layer.incr_biases
+let incr : Mat.mat array -> Mat.mat array -> net -> net =
+  prop Layer.incr_weights Layer.incr_biases
 
-let decr = prop Layer.decr_weights Layer.decr_biases
+let decr : Mat.mat array -> Mat.mat array -> net -> net =
+  prop Layer.decr_weights Layer.decr_biases
 
 let to_string network = failwith "Unimplemented" (* TODO *)
 
 let from_string data = failwith "Unimplemented" (* TODO *)
 
-let pre_net_layers {input_size; output_size; layers} =
+let pre_net_layers {input_size; output_size; layers} : Layer.t array =
   layers |> List.rev |> Array.of_list
 
-let net_layers = Array.copy
+let net_layers : net -> Layer.t array =
+  Array.copy
 
-let copy_pre_net {input_size; output_size; layers} =
+let copy_pre_net {input_size; output_size; layers} : pre_net =
   {input_size; output_size; layers = List.map Layer.copy layers}
 
-let copy_net = Array.map Layer.copy
+let copy_net : net -> net =
+  Array.map Layer.copy
 
-let print_pre_net {input_size; output_size; layers} =
+let print_pre_net {input_size; output_size; layers} : unit =
   print_string "Input size: "; print_int input_size;
   print_string "Output size: "; print_int output_size;
   print_endline "Layers:";
   List.iter Layer.print layers
 
-let print_net = Array.iter Layer.print
+let print_net : net -> unit =
+  Array.iter Layer.print
 
-let to_parameter_list net =
-  Array.fold_left (fun lst layer -> (Layer.get_weights layer,  Layer.get_biases layer)::lst) [] net
+let to_parameter_list (net : net) : (Mat.mat * Mat.mat) list =
+  let f lst layer = (Layer.get_weights layer, Layer.get_biases layer) :: lst in
+  Array.fold_left f [] net
 
 let from_parameter_list (params : (Mat.mat * Mat.mat) list) : net =
   (* TODO Check dimensions *)
   let act = fun x -> x in
   let act_deriv = fun x -> 1. in
-  let make bias_size fn = List.init bias_size (fun _ -> fn) in
-  let f (w, b) =
-    Layer.create w b (make (Mat.row_num b) act) (make (Mat.row_num b) act_deriv) in
+  let make b f = List.init (Mat.row_num b) (fun _ -> f) in
+  let f (w, b) = Layer.create w b (make b act) (make b act_deriv) in
   List.map f params |> Array.of_list
+
+let from_parameter_list (params : (Mat.mat * Mat.mat) list) : net =
+  (* TODO Check dimensions *)
+  let params = Array.of_list params in
+  let act x = x in
+  let act_deriv _ = 1. in
+  let make b f = List.init (Mat.row_num b) (fun _ -> f) in
+  let f (w, b) = Layer.create w b (make b act) (make b act_deriv) in
+  Array.map f params
