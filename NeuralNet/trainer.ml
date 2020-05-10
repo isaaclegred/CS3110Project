@@ -1,9 +1,11 @@
 module Mat = Owl.Mat
-let cost expected actual =
+
+let cost_of_mat (expected : Mat.mat) (actual : Mat.mat) : float =
+  Mat.(expected - actual |> sqr |> sum')
+
+let cost_of_array (expected : float array) (actual : float array) : float =
   let to_mat arr = Mat.of_array arr (Array.length arr) 1 in
-  Mat.((to_mat expected) - (to_mat actual) |> sqr |> sum')
-let cost_mat expected actual =
-  Mat.(expected-actual |> sqr |> sum')
+  cost_of_mat (to_mat expected) (to_mat actual)
 
 module type Data = sig
   type t
@@ -11,19 +13,9 @@ module type Data = sig
   val to_float_array : t -> float array
 end
 
-module type Derivative = sig
-  module In : Data
-  module Out : Data
-  val eval :
-    Mat.mat -> Mat.mat ->
-    Network.net ->
-    (Mat.mat * Mat.mat) array
-end
-
 module type Trainer = sig
   module In : Data
   module Out : Data
-  module D : Derivative
   type t
   val default_rate : float
   val create : In.t -> Out.t -> Network.net -> t
@@ -33,17 +25,6 @@ module type Trainer = sig
   val update : t -> update_status
   val train : t -> float -> t
   val get_network : t -> Network.net
-end
-
-module MakeDerivative (In : Data) (Out : Data) = struct
-  open Canonical_deriv
-  module In = In
-  module Out = Out
-  let eval inputs outputs network =
-    let layers = Network.net_layers network in
-    let evaled_layers = eval_layers layers inputs in
-    let evaled_deriv = eval_derivative layers inputs outputs evaled_layers in
-    Array.map fst evaled_deriv
 end
 
 module type TrainerMaker =
