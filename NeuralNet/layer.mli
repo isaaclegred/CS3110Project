@@ -88,12 +88,6 @@ val get_activations : t -> (float -> float) list
     length from [get_activations layer]. *)
 val set_activations : (float -> float) list -> (float -> float) list -> t -> t
 
-(** [run input layer] is the result of pushing [input] through [layer].
-
-    Raises: [Invalid_argument] if [input] is not of shape
-    [(input_size layer, 1)]. *)
-val run : Owl.Mat.mat -> t -> Owl.Mat.mat
-
 (** [run_with_intermediate input layer] is [(intermediate_result, result)],
     where [result] is [run input layer], and [intermediate_result] is the
     value returned by adding the biases to [input] and applying the activations.
@@ -101,6 +95,12 @@ val run : Owl.Mat.mat -> t -> Owl.Mat.mat
     Raises: [Invalid_argument] if [input] is not of shape
     [(input_size layer, 1)]. *)
 val run_with_intermediate : Owl.Mat.mat -> t -> Owl.Mat.mat * Owl.Mat.mat
+
+(** [run input layer] is the result of pushing [input] through [layer].
+
+    Raises: [Invalid_argument] if [input] is not of shape
+    [(input_size layer, 1)]. *)
+val run : Owl.Mat.mat -> t -> Owl.Mat.mat
 
 (** [to_string layer] is [layer] as a string. *)
 val to_string : t -> string

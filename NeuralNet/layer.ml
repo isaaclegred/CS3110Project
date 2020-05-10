@@ -85,74 +85,75 @@ let decr_biases : Mat.mat -> t -> t =
   change_biases Mat.(-)
 
 let get_activations (layer : t) : (float -> float) list =
-  List.init (layer_size layer) layer.activations
+  List.init (input_size layer) layer.activations
 
-let set_activations new_activations new_derivs
-    ({weights; biases; activations; activation_derivative} as layer) =
-  if List.length new_activations <> layer_size layer then
-    Invalid_argument "Bad length" |> raise
-  else {weights; biases; activations = List.nth new_activations;
-        activation_derivative = List.nth new_derivs}
+let set_activations
+    (new_acts : (float -> float) list)
+    (new_derivs : (float -> float) list)
+    ({weights; biases; activations; activation_derivative} : t)
+  : t =
+  create weights biases new_acts new_derivs
 
-let run input ({weights; biases; activations; activation_derivative} as layer) =
+let run_with_intermediate
+    (input : Mat.mat)
+    ({weights; biases; activations; activation_derivative} as layer : t)
+  : Mat.mat * Mat.mat =
   if Mat.shape input <> (input_size layer, 1) then
     Invalid_argument "Bad shape" |> raise
   else
-    let result = Mat.((input + biases) |> mapi activations) in
-    Mat.(weights *@ result)
+    let partial_result = Mat.(input + biases |> mapi activations) in
+    partial_result, Mat.(weights *@ partial_result)
 
-let run_with_intermediate input ({weights; biases; activations; activation_derivative} as layer) =
-  if Mat.shape input <> (input_size layer, 1) then
-    Invalid_argument "Bad shape" |> raise
-  else
-    let partial_result = Mat.((input + biases) |> mapi activations) in
-    (partial_result, Mat.(weights *@ partial_result))
+let run (input : Mat.mat) (layer : t) : Mat.mat =
+  layer
+  |> run_with_intermediate input
+  |> snd
 
 let to_string layer = failwith "Unimplemented" (* TODO *)
 
 let from_string data = failwith "Unimplemented" (* TODO *)
 
-let copy {weights; biases; activations; activation_derivative} =
-  {weights = Mat.copy weights; biases = Mat.copy biases; activations; activation_derivative}
+let copy ({weights; biases; activations; activation_derivative} : t) : t =
+  {
+    weights = Mat.copy weights;
+    biases = Mat.copy biases;
+    activations;
+    activation_derivative;
+  }
 
-let print {weights; biases; activations; activation_derivative} =
+let print ({weights; biases; activations; activation_derivative} : t) : unit =
   print_endline "Weights:";
   Mat.print weights |> Format.print_newline;
   print_endline "Biases:";
   Mat.print biases |> Format.print_newline
 
-(* Ok so I was wrong, we need both a linearization function which returns the local
-   response of the layer with respect to [input] and this is what we propogate through
-   in the process of computing a derivative.  The linearization of the function that adds
-   the biases is the identity matrix, and the function that multiplies by the weights is
-   just the matrix of weights
-*)
-let linearization input {weights; biases; activations; activation_derivative} =
-  let input_size = fst (Mat.shape input) in
-  let act_input = Mat.(input + biases) in
-  let input_deriv = ref (Mat.copy weights) in
-  let rec loop index =
-    match index with
-    | max when max = (input_size) -> ()
-    | i ->
-      let act_deriv = activation_derivative i Mat.(get act_input i 0) in
-      input_deriv := Mat.(map_at_col (fun elt -> act_deriv *. elt)  !input_deriv i ); loop (index + 1) in
-  let _ = loop 0 in !input_deriv
+(** [linearization layer] is the linearization of [layer].
 
-(* The prefactor tells us how the global outputs respond to the local outputs linearly
-   the input is the computed input into this layer, since
-*)
-let deriv prefactor desired_output actual_output (partial_input, input)
-    ({weights; biases; activations; activation_derivative} as layer) =
-  let out_size = layer_size layer in
+    The linearization of the function that adds the biases is the identity
+    matrix, and the linearization of the function that multiplies the weights
+    is just the matrix of weights. *)
+let linearization
+    ({weights; biases; activations; activation_derivative} : t)
+    (input : Mat.mat)
+  : Mat.mat =
+  let input = Mat.(input + biases) |> Mat.to_array in
+  let act_deriv i = activation_derivative i input.(i) in
+  Mat.(mapi_2d (fun i j x -> act_deriv i *. x) weights)
+
+let deriv
+    (prefactor : Mat.mat)
+    (desired_output : Mat.mat)
+    (actual_output : Mat.mat)
+    (partial_input, input : Mat.mat * Mat.mat)
+    (layer : t)
+  : (Mat.mat * Mat.mat) * Mat.mat =
   let residuals = Mat.(actual_output - desired_output) in
-  let local_linearization = linearization input layer in
-  let total_linearization = Mat.(prefactor *@ local_linearization) in
-  let bias_derivs = Mat.(transpose(total_linearization) *@ residuals ) in
-  if  snd (Mat.shape prefactor) <> out_size
-  then Invalid_argument "Bad shape in deriv"|> raise
-  else let weighted_residuals =
-         Mat.(transpose(residuals) *@ prefactor)
-    in
-    let weight_deriv = Mat.(weighted_residuals * partial_input) in
-    ((Mat.transpose(weight_deriv), bias_derivs), total_linearization)
+  let linearized = Mat.(prefactor *@ (linearization layer input)) in
+  let weight_deriv =
+    residuals
+    |> Mat.( *@ ) Mat.(transpose prefactor)
+    |> Mat.( * ) Mat.(transpose partial_input) in
+  let bias_deriv =
+    residuals
+    |> Mat.( *@ ) Mat.(transpose linearized) in
+  (weight_deriv, bias_deriv), linearized
