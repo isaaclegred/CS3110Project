@@ -1,6 +1,11 @@
 open OUnit2
+module Mat = Owl.Mat
 
-(* IO Tests *)
+let string_of_mat = Owl_pretty.dsnda_to_string
+let make_mat_equality_test name expected actual : test =
+  name >::(fun _ ->
+      assert_equal expected actual ~printer:string_of_mat)
+  (* IO Tests *)
 
 open IO
 
@@ -14,6 +19,8 @@ let params =
   | None -> IOFailure "No parameters were extracted from the csv" |> raise
   | Some pf -> !(pf.params)
 
+
+  
 let io_tests = [
 
 ]
