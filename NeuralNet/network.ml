@@ -71,10 +71,6 @@ let incr : Mat.mat array -> Mat.mat array -> net -> net =
 let decr : Mat.mat array -> Mat.mat array -> net -> net =
   prop Layer.decr_weights Layer.decr_biases
 
-let to_string network = failwith "Unimplemented" (* TODO *)
-
-let from_string data = failwith "Unimplemented" (* TODO *)
-
 let pre_net_layers {input_size; output_size; layers} : Layer.t array =
   layers |> List.rev |> Array.of_list
 

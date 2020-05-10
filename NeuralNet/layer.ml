@@ -109,10 +109,6 @@ let run (input : Mat.mat) (layer : t) : Mat.mat =
   |> run_with_intermediate input
   |> snd
 
-let to_string layer = failwith "Unimplemented" (* TODO *)
-
-let from_string data = failwith "Unimplemented" (* TODO *)
-
 let copy ({weights; biases; activations; activation_derivative} : t) : t =
   {
     weights = Mat.copy weights;

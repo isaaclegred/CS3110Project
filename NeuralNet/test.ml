@@ -18,6 +18,8 @@ let cmp_mats name expected actual : test =
 
 (* IO Tests *)
 
+(*
+
 open IO
 
 exception IOFailure of string
@@ -41,6 +43,8 @@ let params =
 let io_tests = [
   cmp_mat_arr "independent_data test" ([| 1.; 2.; 3. |], 3, 1) (fst data)
 ]
+
+*)
 
 (* Layer tests *)
 
@@ -79,8 +83,63 @@ let layer_tests = [
       assert_equal (Mat.create 0 0 0.) (Layer.get_weights layer_00));
   "00 has 01 biases" >:: (fun _ ->
       assert_equal (Mat.create 0 1 0.) (Layer.get_biases layer_00));
-  "00 has empty activations" >:: (fun _ ->
-      assert_equal [] (Layer.get_activations layer_00));
+  "00 has zero activations" >:: (fun _ ->
+      assert_equal 0 (Layer.get_activations layer_00 |> List.length));
+  (* 01 getters *)
+  "01 has input size 1" >:: (fun _ ->
+      assert_equal 1 (Layer.input_size layer_01));
+  "01 has layer size 0" >:: (fun _ ->
+      assert_equal 0 (Layer.layer_size layer_01));
+  "01 has 01 weights" >:: (fun _ ->
+      assert_equal (Mat.create 0 1 0.) (Layer.get_weights layer_01));
+  "01 has 11 biases" >:: (fun _ ->
+      assert_equal (Mat.create 1 1 3110.) (Layer.get_biases layer_01));
+  "01 has one activation" >:: (fun _ ->
+      assert_equal 1 (Layer.get_activations layer_01 |> List.length));
+  (* 02 getters *)
+  "02 has input size 2" >:: (fun _ ->
+      assert_equal 2 (Layer.input_size layer_02));
+  "02 has layer size 0" >:: (fun _ ->
+      assert_equal 0 (Layer.layer_size layer_02));
+  "02 has 02 weights" >:: (fun _ ->
+      assert_equal (Mat.create 0 2 0.) (Layer.get_weights layer_02));
+  "02 has 21 biases" >:: (fun _ ->
+      assert_equal (Mat.create 2 1 3110.) (Layer.get_biases layer_02));
+  "02 has two activations" >:: (fun _ ->
+      assert_equal 2 (Layer.get_activations layer_02 |> List.length));
+  (* 10 getters *)
+  "10 has input size 0" >:: (fun _ ->
+      assert_equal 0 (Layer.input_size layer_10));
+  "10 has layer size 1" >:: (fun _ ->
+      assert_equal 1 (Layer.layer_size layer_10));
+  "10 has 10 weights" >:: (fun _ ->
+      assert_equal (Mat.create 1 0 0.) (Layer.get_weights layer_10));
+  "10 has 01 biases" >:: (fun _ ->
+      assert_equal (Mat.create 0 1 0.) (Layer.get_biases layer_10));
+  "10 has zero activations" >:: (fun _ ->
+      assert_equal 0 (Layer.get_activations layer_10 |> List.length));
+  (* 11 getters *)
+  "11 has input size 1" >:: (fun _ ->
+      assert_equal 1 (Layer.input_size layer_11));
+  "11 has layer size 1" >:: (fun _ ->
+      assert_equal 1 (Layer.layer_size layer_11));
+  "11 has 11 weights" >:: (fun _ ->
+      assert_equal (Mat.create 1 1 3110.) (Layer.get_weights layer_11));
+  "11 has 11 biases" >:: (fun _ ->
+      assert_equal (Mat.create 1 1 3110.) (Layer.get_biases layer_11));
+  "11 has one activation" >:: (fun _ ->
+      assert_equal 1 (Layer.get_activations layer_11 |> List.length));
+  (* 12 getters *)
+  "12 has input size 2" >:: (fun _ ->
+      assert_equal 2 (Layer.input_size layer_12));
+  "12 has layer size 1" >:: (fun _ ->
+      assert_equal 1 (Layer.layer_size layer_12));
+  "12 has 12 weights" >:: (fun _ ->
+      assert_equal (Mat.create 1 2 3110.) (Layer.get_weights layer_12));
+  "12 has 21 biases" >:: (fun _ ->
+      assert_equal (Mat.create 2 1 3110.) (Layer.get_biases layer_12));
+  "12 has two activations" >:: (fun _ ->
+      assert_equal 2 (Layer.get_activations layer_12 |> List.length));
 ]
 
 (* Network tests *)
@@ -104,7 +163,7 @@ let default_trainer_tests = [
 (* Run tests *)
 
 let tests = [
-  io_tests;
+  (* io_tests; *)
   layer_tests;
   network_tests;
   derivative_tests;

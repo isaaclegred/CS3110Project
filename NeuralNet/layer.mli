@@ -104,14 +104,6 @@ val run_with_intermediate : Owl.Mat.mat -> t -> Owl.Mat.mat * Owl.Mat.mat
     [(input_size layer, 1)]. *)
 val run : Owl.Mat.mat -> t -> Owl.Mat.mat
 
-(** [to_string layer] is [layer] as a string. *)
-val to_string : t -> string
-
-(** [from_string str] is [layer] if [str] is [to_string layer].
-
-    Raises: [Invalid_argument] if [str] cannot come from [to_string]. *)
-val from_string : string -> t
-
 (** [copy layer] is a (deep) copy of [layer]. *)
 val copy : t -> t
 

@@ -61,14 +61,6 @@ val incr : Owl.Mat.mat array -> Owl.Mat.mat array -> net -> net
     Raise: [Invalid_argument] if the shapes don't match. *)
 val decr : Owl.Mat.mat array -> Owl.Mat.mat array -> net -> net
 
-(** [to_string network] is [network] as a string. *)
-val to_string : net -> string
-
-(** [from_string str] is [network] if [str] is [to_string network].
-
-    Raises: [Invalid_argument] if [str] cannot come from [to_string]. *)
-val from_string : string -> net
-
 (* [pre_net_layers pre_net] are the layers of [pre_net].
 
    The layers returned are views. Be careful about direct modifications. *)
