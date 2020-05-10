@@ -89,7 +89,7 @@ let run_test input_size output_size iterations noise f =
     |> pp_mat "Input:"
     |> (!one_layer_trainer |> OneLayerT.get_network |> Network.run_mat)
     |> (fun x -> pp_mat "Expected:" output_data |> ignore; pp_mat "Actual:" x)
-    |> Trainer.cost_mat output_data
+    |> Trainer.cost_of_mat output_data
     |> (fun x -> print_string "Loss: "; print_float x ; print_endline "\n");
     (* !one_layer_trainer |> T.get_network |> Network.print_net; *)
     match !one_layer_trainer |> OneLayerT.update with
