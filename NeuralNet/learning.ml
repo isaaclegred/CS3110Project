@@ -59,7 +59,8 @@ let run_test input_size output_size iterations layer_num noise f =
 
   let network =
     Network.create In.size Out.size
-    |> (fun x -> Array.fold_left (fun pre_net layer -> Network.add_layer layer pre_net) x layers)
+    |> (fun x -> Array.fold_left (fun pre_net layer ->
+        Network.add_layer layer pre_net) x layers)
     |> Network.seal in
 
   let trainer = T.create input_data output_data network |> ref in

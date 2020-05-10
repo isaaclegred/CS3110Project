@@ -94,7 +94,9 @@ let print_net : net -> unit =
 
 let to_parameter_list (net : net) : (Mat.mat * Mat.mat) list =
   let f lst layer = (Layer.get_weights layer, Layer.get_biases layer) :: lst in
-  Array.fold_left f [] net
+  net
+  |> Array.fold_left f []
+  |> List.rev
 
 let from_parameter_list (params : (Mat.mat * Mat.mat) list) : net =
   let params = Array.of_list params in

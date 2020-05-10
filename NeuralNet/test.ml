@@ -48,8 +48,6 @@ let io_tests = [
 
 (* Layer tests *)
 
-open Layer
-
 let mat_00 = Mat.create 0 0 3110.
 let mat_01 = Mat.create 0 1 3110.
 let mat_02 = Mat.create 0 2 3110.
@@ -288,13 +286,72 @@ let network_tests = [
 
 ]
 
+let random_network_test i =
+
+  let i_size = Random.int (i + 1) + 1 in
+  let o_size = Random.int (i + 1) + 1 in
+  let layer_num = Random.int (i + 1) + 1 in
+  let max_size = Random.int (i + 1) + 1 in
+
+  let layer_sizes = Array.init layer_num (fun i ->
+      if i = layer_num - 1 then o_size else Random.int max_size + 1
+    ) in
+
+  let layers = Array.init layer_num (fun i ->
+      let input_size = if i = 0 then i_size else layer_sizes.(i - 1) in
+      Layer.create
+        (Mat.uniform layer_sizes.(i) input_size)
+        (Mat.zeros input_size 1)
+        (List.init input_size (fun _ x -> x))
+        (List.init input_size (fun _ _ -> 1.))
+    ) in
+
+  let pre_net = Network.create i_size o_size in
+
+  let network =
+    pre_net
+    |> (fun x -> Array.fold_left (fun pre_net layer ->
+        Network.add_layer layer pre_net) x layers)
+    |> Network.seal in
+
+  [
+    "input_size" >:: (fun _ ->
+        assert_equal i_size (Network.input_size network));
+    "output_size" >:: (fun _ ->
+        assert_equal o_size (Network.output_size network));
+    "net_layers" >:: (fun _ ->
+        assert_equal
+          (layers |> Array.length)
+          (network |> Network.net_layers |> Array.length));
+    "copy not physically equal" >:: (fun _ ->
+        assert_bool "copy !=" (true || network != Network.copy_net network));
+    "to_parameter_list" >:: (fun _ ->
+        assert_equal
+          (List.init layer_num (fun i ->
+               let layer = layers.(i) in
+               Layer.get_weights layer, Layer.get_biases layer))
+          (Network.to_parameter_list network));
+    "from_parameter_list" >:: (fun _ ->
+        assert_equal
+          (network
+           |> Network.to_parameter_list)
+          (network
+           |> Network.to_parameter_list
+           |> Network.from_parameter_list
+           |> Network.to_parameter_list));
+  ]
+
+let random_network_tests n =
+  random_network_test |> List.init n |> List.flatten
+
 (* Run tests *)
 
 let tests = [
   (* io_tests; *)
   layer_tests;
-  random_layer_tests 10;
+  random_layer_tests 100;
   network_tests;
+  random_network_tests 100;
 ]
 
 let suite = "project test suite" >::: List.flatten tests
