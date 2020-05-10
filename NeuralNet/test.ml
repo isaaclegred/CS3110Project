@@ -8,12 +8,13 @@ open OUnit2
 module Mat = Owl.Mat
 
 let string_of_mat = Owl_pretty.dsnda_to_string
-let make_mat_equality_test
-    (name : string)
-    (expected : Mat.mat)
-    (actual : Mat.mat)
-  : test =
-  name >:: (fun _ -> assert_equal expected actual ~printer:string_of_mat)
+let cmp_mat_arr name (exp_arr, rows, columns) actual_mat : test =
+  let exp_mat = Mat.of_array exp_arr rows columns in
+  name >:: (fun _ ->
+      assert_equal exp_mat actual_mat ~printer:string_of_mat)
+let cmp_mats name expected actual : test =
+  name >:: (fun _ ->
+      assert_equal expected actual ~printer:string_of_mat)
 
 (* IO Tests *)
 
@@ -21,7 +22,15 @@ open IO
 
 exception IOFailure of string
 
-let test_file = read "./test.csv" R
+let raw_test_file = read "./test.csv" R
+let data_file = unpack_data raw_test_file
+let data = match data_file with
+  | None -> IOFailure "No data was extracted" |> raise
+  | Some df ->
+    begin match df.data with
+      | None -> IOFailure "No data was extracted" |> raise
+      | Some local_data -> local_data
+    end
 let test_params_holder = make_blank_params_file "F_Params.csv" RW
 let test_pf = unpack_params (Some test_params_holder)
 let params =
@@ -30,7 +39,7 @@ let params =
   | Some pf -> !(pf.params)
 
 let io_tests = [
-
+  cmp_mat_arr "independent_data test" ([| 1.; 2.; 3. |], 3, 1) (fst data)
 ]
 
 (* Layer tests *)
