@@ -48,7 +48,7 @@ let unpack_data data_file =
     let ind = List.map float_of_string (List.tl (List.hd lists)) in
     let ind_n = List.length ind in
     let ind_mat = mat_from_list ind ind_n in
-    let dep = List.map float_of_string (List.hd (List.tl (List.tl lists))) in
+    let dep = List.map float_of_string (List.tl (List.tl lists|>List.hd)) in
     let dep_n = List.length dep in
     let dep_mat = mat_from_list dep dep_n in
     Some (ind_mat, dep_mat) in
