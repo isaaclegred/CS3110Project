@@ -48,17 +48,29 @@ let run_test input_size output_size iterations noise f =
     |> (fun (i, o) -> Mat.of_array i In.size 1, Mat.of_array o Out.size 1)
   in
 
-  let layer =
+  let layer_size = 12
+  in
+
+  let input_layer =
     Layer.create
-      (Mat.uniform Out.size In.size)
+      (Mat.uniform layer_size In.size)
       (Mat.zeros In.size 1)
       (List.init In.size (fun _ -> fun x -> x))
       (List.init In.size (fun _ -> fun x -> 1.0))
   in
 
+  let output_layer =
+    Layer.create
+      (Mat.uniform Out.size layer_size)
+      (Mat.zeros layer_size 1)
+      (List.init layer_size (fun _ -> fun x -> x))
+      (List.init layer_size (fun _ -> fun x -> 1.0))
+  in
+
   let network = Network.(
       create In.size Out.size
-      |> seal layer
+      |> add_layer input_layer
+      |> seal output_layer
     )
   in
 

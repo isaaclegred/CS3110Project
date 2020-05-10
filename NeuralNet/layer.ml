@@ -138,7 +138,7 @@ let linearization
   : Mat.mat =
   let input = Mat.(input + biases) |> Mat.to_array in
   let act_deriv i = activation_derivative i input.(i) in
-  Mat.(mapi_2d (fun i j x -> act_deriv i *. x) weights)
+  Mat.(mapi_2d (fun i j x -> act_deriv j *. x) weights)
 
 let deriv
     (prefactor : Mat.mat)
@@ -151,8 +151,8 @@ let deriv
   let linearized = Mat.(prefactor *@ (linearization layer input)) in
   let weight_deriv =
     residuals
-    |> Mat.( *@ ) Mat.(transpose prefactor)
-    |> Mat.( * ) Mat.(transpose partial_input) in
+    |> (fun x -> Mat.(transpose prefactor *@ x))
+    |> (fun x -> Mat.(x *@ transpose partial_input)) in
   let bias_deriv =
     residuals
     |> Mat.( *@ ) Mat.(transpose linearized) in

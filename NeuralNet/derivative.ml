@@ -18,12 +18,14 @@ let eval_layers
     (input : Mat.mat) (layers : Layer.t array)
   : (Mat.mat * Mat.mat) array =
   let num_layers = Array.length layers in
-  let values = Array.make (num_layers + 1) (Mat.copy input, Mat.copy input) in
-  for i = 1 to num_layers do
-    let x = Layer.run_with_intermediate (snd values.(i - 1)) layers.(i - 1) in
-    values.(i) <- x
+  let values = Array.make (num_layers * 2 + 2) (Mat.copy input) in
+  for i = 0 to num_layers - 1 do
+    let x, y = Layer.run_with_intermediate values.(i * 2) layers.(i) in
+    values.(i * 2 + 1) <- x;
+    values.(i * 2 + 2) <- y
   done;
-  values
+  values.(num_layers * 2 + 1) <- values.(num_layers * 2);
+  Array.init (num_layers + 1) (fun i -> values.(i * 2), values.(i * 2 + 1))
 
 (** [eval_derivative input desired_output layers] is an array [derivs] of
     length [Array.length layers], so that
