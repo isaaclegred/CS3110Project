@@ -1,8 +1,9 @@
+(** Functionality for training a neural network *)
 (** [cost_of_array expected actual] is the cost of [actual] relative to
     [expected]. *)
 val cost_of_array : float array -> float array -> float
 
-(** [cost_of_array expected actual] is the cost of [actual] relative to
+(** [cost_of_mat expected actual] is the cost of [actual] relative to
     [expected]. *)
 val cost_of_mat : Owl.Mat.mat -> Owl.Mat.mat -> float
 

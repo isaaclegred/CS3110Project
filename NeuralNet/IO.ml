@@ -1,8 +1,7 @@
 module Mat = Owl.Mat
 
 type file_permission = R | RW
-(* Independent data represents time steps the solution is evaluated at, must
-   be strictly increasing *)
+                       
 type independent_data = Mat.mat
 type dependent_data = Mat.mat
 (* Params can be either weights or biases *)
@@ -44,9 +43,23 @@ let mat_from_list lst n =
     let _ = List.fold_left f 0 lst in
     mat
 
-(* TODO List.hd and List.tl are highly discouraged! *)
-let process_data_into_mats c =
-  let lists = Csv.load c in
+(** [unpack_data data_file] If data_file is not [None], and the data 
+    in the [csv] of [data_file] has not already been extracted, then 
+    this function processes float data contained in the csv in 
+    data_file and stores it in the [data] entry of the data_file record.
+    Returning a data_file option.  
+    
+    Requires : csv represented  by [data_file] satisfies the data format 
+    requirement. The first two lines of the file will be processed into 
+    [dependent_data] and [dependent_data], and each must start with a one 
+    word (one comma-separated value) identifier.
+
+    Raises : [Failure] if the stored data doesn't adhere to the data layout 
+    requirements.
+*) 
+let unpack_data data_file =
+  let process_data_into_mats c =
+    let lists = Csv.load c in
   (* Require a single word identifier for the data in the csv such as ind, dep;
      but more generally the data being handled such as distance(m) or time(s) *)
   let ind = List.map float_of_string (List.tl (List.hd lists)) in
@@ -55,9 +68,7 @@ let process_data_into_mats c =
   let dep = List.map float_of_string (List.hd (List.tl (List.tl lists))) in
   let dep_n = List.length dep in
   let dep_mat = mat_from_list dep dep_n in
-  Some (ind_mat, dep_mat)
-
-let unpack_data data_file =
+  Some (ind_mat, dep_mat) in
   match data_file with
   | None -> None
   | Some {path; status; data = Some _; file} as f ->

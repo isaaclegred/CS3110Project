@@ -12,7 +12,7 @@ val input_size : net -> int
 
 val output_size : net -> int
 
-(** Run the neural net [network] on the float array [inputs] to get predicted
+(** [run network] runs the neural net [network] on the float array [inputs] to get predicted
     outputs. *)
 val run : net -> float array -> float array
 
