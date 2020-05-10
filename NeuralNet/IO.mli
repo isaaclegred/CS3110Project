@@ -102,3 +102,8 @@ val write_params : param_file -> param_file
     [updated = false], [parameters = ref None].
 *)
 val make_blank_params_file : string -> file_permission -> param_file
+
+(** [update_params params_file new_params] modifies [params_file] in place to
+    replace its params field with [new_params].
+*)
+val update_params : param_file -> (weights * biases) list option -> unit

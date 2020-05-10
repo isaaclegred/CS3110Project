@@ -19,5 +19,6 @@
 # Ignore docs
 *doc*
 
-# Ignore binaries
+# Ignore binaries and zips
 *.byte
+*.zip

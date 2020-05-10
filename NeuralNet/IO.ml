@@ -40,7 +40,7 @@ let mat_from_list lst n =
     let _ = List.fold_left f 0 lst in
     mat
 
-let hd default = function
+let hd ?(default = []) = function
   | [] -> default
   | h :: t -> h
 
@@ -53,10 +53,10 @@ let unpack_data data_file =
     let lists = Csv.load c in
     (* Need a single word identifier for the data in the csv such as ind, dep;
        but generally the data being handled such as distance(m) or time(s). *)
-    let ind = List.map float_of_string (tl (hd [] lists)) in
+    let ind = List.map float_of_string (lists |> hd |> tl) in
     let ind_n = List.length ind in
     let ind_mat = mat_from_list ind ind_n in
-    let dep = List.map float_of_string (hd [] (tl (tl lists))) in
+    let dep = List.map float_of_string (lists |> tl |> hd |> tl) in
     let dep_n = List.length dep in
     let dep_mat = mat_from_list dep dep_n in
     Some (ind_mat, dep_mat) in
@@ -136,3 +136,6 @@ let write_params ({path; status; params; file; updated} as params_file) =
 
 let make_blank_params_file path status =
   {path; status; params = ref None; file = []; updated = ref false}
+
+let update_params {path; status; params; file; updated} new_params =
+  params := new_params; updated := true
