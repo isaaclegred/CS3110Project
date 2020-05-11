@@ -1,8 +1,48 @@
-(* At the top of your test file, which should be named test.ml or something
-   very similar so that the grader can find it, please write a (potentially
-   lengthy) comment describing your approach to testing: what you tested,
-   anything you omitted testing, and why you believe that your test suite
-   demonstrates the correctness of your system. *)
+(**
+   Our system has five main modules: Layer, Network, Derivative, DefaultTrainer
+   and IO. We have extensively tested all five modules, but not all of them
+   appear in this file because some of those modules do not lend themselves to
+   OUnit testing. The modules Layer and Network were primarily tested by OUnit,
+   while the rest of the modules were primarily manually tested. We describe
+   our rationale below.
+
+   - Layer and Network:
+     We employed a mix of black box, glass box and randomized testing. Our
+     tests are largely black box, because we tested the functions against the
+     documented specification(s) in layer.mli and network.mli instead of the
+     implementation(s). However, we needed to do some glass box testing for
+     asserting that certain functions threw the right exceptions, because the
+     specification does not say anything about the argument passed to the
+     exception constructor. Thus, in order to use assert_raises correctly, we
+     needed to refer to the implementation. Finally, we relied heavily on
+     randomized testing to get a wide coverage of the space. To be specific, we
+     tested the edge cases (n = 0, 1) by manually writing OUnit tests, since
+     they have a higher chance of catastrophic behavior; the rest of the tests
+     were randomized.
+
+   - Derivative and DefaultTrainer:
+     These are tested semi-manually in the Learning module. Additionally, that
+     module also demonstrates an example of how to use our system. It is
+     impossible to use OUnit tests to check these modules, because their
+     workings involve a lot of opaque linear algebra and potential randomness,
+     and so are not amenable to unit testing. Hence, we verify that these parts
+     of the system work correctly by checking that our system manages to
+     achieve its goal: to accurately predict data.
+
+   - IO:
+     To avoid cluttering the folder, the IO module was tested manually.
+     Nevertheless, testing in utop demonstrates that it behaves correctly
+     within its scope. It is, however, possible that IO will not work as
+     intended on other OSes, etc; we only managed to test it on Macs.
+
+   We believe our testing approach demonstrates the correctness of our system
+   because it has been comprehensive. Most importantly, it is near impossible
+   to formally verify that a neural network works correctly because the system
+   is inherently opaque uses a degree of randomness. The large volume of
+   randomized tests give us a good guarantee that our system will not crash,
+   and the correctness of our neural network is demonstrated by the fact that
+   it is able to achieve high accuracy when manually tested on random data sets.
+*)
 
 open OUnit2
 module Mat = Owl.Mat
@@ -16,9 +56,7 @@ let cmp_mats name expected actual : test =
   name >:: (fun _ ->
       assert_equal expected actual ~printer:string_of_mat)
 
-(* IO Tests *)
-
-(*
+(* IO tests *)
 
 open IO
 
@@ -43,8 +81,6 @@ let params =
 let io_tests = [
   cmp_mat_arr "independent_data test" ([| 1.; 2.; 3. |], 3, 1) (fst data)
 ]
-
-*)
 
 (* Layer tests *)
 
@@ -374,7 +410,7 @@ let random_network_tests n =
 (* Run tests *)
 
 let tests = [
-  (* io_tests; *)
+  io_tests;
   layer_tests;
   random_layer_tests 100;
   network_tests;
