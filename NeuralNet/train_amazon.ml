@@ -13,7 +13,10 @@ let extract_independent_data path =
       
 
 let amazon_data = extract_independent_data "amazon_price.csv"
-
+(* Create a net with the usual parameters, and aux_layer sizes the layer sizes
+   of the layers you want (a list) which are auxiallry in the sense that they are 
+   the hidden layers, the final layer is added automatically. 
+*)
 let make_net input_size output_size aux_layer_sizes=
   
   let module In = struct
@@ -50,7 +53,12 @@ let make_net input_size output_size aux_layer_sizes=
     |> Network.seal in
   network
 
-
+(* The data is just a long time series of daily open prices of amazon  
+   we fit it In.size + Out.size at a time, starting on day [start_day]
+   i.e. start_day = 20 means that the input and output data is the subset of 
+   data starting at element start_day in the array, and going through start_day + 
+   In.size + Out.size.
+*)
 let train_net_on_data network data start_day iterations =
   let input_size = Network.input_size network in
   let output_size = Network.output_size network in
