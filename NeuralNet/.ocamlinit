@@ -11,3 +11,4 @@
 #load_rec "learning.cmo";;
 #load_rec "train_amazon.cmo";;
 open Learning;;
+open Train_amazon;;
