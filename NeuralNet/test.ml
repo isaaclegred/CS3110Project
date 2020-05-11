@@ -44,6 +44,16 @@
    it is able to achieve high accuracy when manually tested on random data sets.
 *)
 
+(*
+We have implemented tests from two separte points of view, one from unit testing
+contained in this file, and one from holistic testing, contained in learning.ml.
+These tests are designed to test individual components and independent 
+operations: things that may be be points of failure along the way to making and 
+training a neural net.  These include IO and other low level module tests, but 
+also tests of the network module functions.  At some point testing these 
+functions requires constructing full networks, after this point much of
+the testing is no longer "unit like" and becomes a full test of the system. 
+*)
 open OUnit2
 module Mat = Owl.Mat
 
@@ -71,15 +81,25 @@ let data = match data_file with
       | None -> IOFailure "No data was extracted" |> raise
       | Some local_data -> local_data
     end
-let test_params_holder = make_blank_params_file "F_Params.csv" RW
-let test_pf = unpack_params (Some test_params_holder)
-let params =
-  match test_pf with
-  | None -> IOFailure "No parameters were extracted from the csv" |> raise
-  | Some pf -> !(pf.params)
+let test_pf = make_blank_params_file "test_params.csv" RW
+let e_params = (Mat.of_array [|1.; 1.; 1.; 2.; 2.; 2.; 3.; 3.; 3.|] 3 3,
+              Mat.of_array [|1.; 1.; 1.|] 3 1) 
+let _ = update_params test_pf (Some [e_params])
 
+let written_pf = write_params test_pf
+let r_test_pf = make_blank_params_file "test_params.csv" RW
+let r_params =
+  match unpack_params (Some r_test_pf)  with
+  | None -> IOFailure "No parameters were extracted from the csv" |> raise
+  | Some pf -> match !(pf.params) with
+    | None -> IOFailure "No parameters were extracted from the csv" |> raise
+    | Some [] ->IOFailure "No parameters were extracted from the csv" |> raise
+    | Some ((w,b)::t) -> (w,b) 
 let io_tests = [
-  cmp_mat_arr "independent_data test" ([| 1.; 2.; 3. |], 3, 1) (fst data)
+  cmp_mat_arr "independent_data test" ([| 1.; 2.; 3. |], 3, 1) (fst data);
+  cmp_mat_arr "dependent_data test" ([|1.; 4.; 9. |], 3, 1) (snd data);
+  cmp_mats "written and read weights" (fst e_params) (fst r_params);
+  cmp_mats "written and read biases" (snd e_params) (snd r_params);
 ]
 
 (* Layer tests *)
