@@ -96,8 +96,9 @@ let train_net_on_data network data start_day iterations =
     Mat.iter (fun x -> print_float x; print_string " ") arr |> print_newline;
     arr in
   let trainer = T.create input_data output_data network |> ref in
-  for i = 1 to iterations do
-    print_string "Iteration #"; print_int i; print_endline "\n";
+  let counter = ref 0 in
+  while !counter < iterations do
+    print_string "Iteration #"; print_int !counter; print_endline "\n";
     input_data
     |> pp_mat "Input:"
     |> (!trainer |> T.get_network |> Network.run_mat)
@@ -106,7 +107,7 @@ let train_net_on_data network data start_day iterations =
     |> (fun x -> print_string "Loss: "; print_float x; print_endline "\n");
     match !trainer |> T.update with
     | Accept better ->
-      print_endline "Accepted"; trainer := better
+      print_endline "Accepted"; counter:= !counter + 1; trainer := better
     | Reject worse ->
       print_endline "Rejected"; trainer := worse
   done;
@@ -114,3 +115,14 @@ let train_net_on_data network data start_day iterations =
   |> T.get_network
   |> (fun x -> x)
      
+let run_program mat_data =
+  let data = Mat.to_array mat_data in
+  let net = make_net 25 3 [7;5] in
+  let net_1 = train_net_on_data net (data) 0 55 in
+  let net_2 = train_net_on_data net_1 (data) 60 15 in
+  let net_3 = train_net_on_data net_2 (data) 170 12 in
+  let net_4 = train_net_on_data net_3 (data) 205 12 in
+  let net_5 = train_net_on_data net_4 (data) 210 12 in
+  let net_6 = train_net_on_data net_5 (data) 220 12 in
+  Network.run net_6 (Array.sub data 227 25)
+  
