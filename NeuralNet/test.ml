@@ -282,8 +282,30 @@ let random_layer_tests n =
 
 (* Network tests *)
 
-let network_tests = [
+let pre_net_01 = Network.create 0 1
+let pre_net_10 = Network.create 1 0
 
+let network_tests = [
+  "create fail in" >:: (fun _ ->
+      assert_raises
+        (Invalid_argument "Sizes cannot be negative")
+        (fun () -> Network.create (-1) 1));
+  "create fail out" >:: (fun _ ->
+      assert_raises
+        (Invalid_argument "Sizes cannot be negative")
+        (fun () -> Network.create 1 (-1)));
+  "create fail in and out" >:: (fun _ ->
+      assert_raises
+        (Invalid_argument "Sizes cannot be negative")
+        (fun () -> Network.create (-1) (-1)));
+  "seal fail a" >:: (fun _ ->
+      assert_raises
+        (Invalid_argument "Shapes do not match")
+        (fun () -> Network.seal pre_net_01));
+  "seal fail b" >:: (fun _ ->
+      assert_raises
+        (Invalid_argument "Shapes do not match")
+        (fun () -> Network.seal pre_net_10));
 ]
 
 let random_network_test i =
@@ -306,25 +328,30 @@ let random_network_test i =
         (List.init input_size (fun _ _ -> 1.))
     ) in
 
-  let pre_net = Network.create i_size o_size in
-
-  let network =
-    pre_net
+  let pre_net =
+    Network.create i_size o_size
     |> (fun x -> Array.fold_left (fun pre_net layer ->
-        Network.add_layer layer pre_net) x layers)
-    |> Network.seal in
+        Network.add_layer layer pre_net) x layers) in
+
+  let network = pre_net |> Network.seal in
 
   [
     "input_size" >:: (fun _ ->
         assert_equal i_size (Network.input_size network));
     "output_size" >:: (fun _ ->
         assert_equal o_size (Network.output_size network));
+    "pre_net_layers" >:: (fun _ ->
+        assert_equal
+          (layers |> Array.length)
+          (pre_net |> Network.pre_net_layers |> Array.length));
     "net_layers" >:: (fun _ ->
         assert_equal
           (layers |> Array.length)
           (network |> Network.net_layers |> Array.length));
-    "copy not physically equal" >:: (fun _ ->
-        assert_bool "copy !=" (true || network != Network.copy_net network));
+    "copy_pre_net not physically equal" >:: (fun _ ->
+        assert_bool "copy !=" (pre_net != Network.copy_pre_net pre_net));
+    "copy_net not physically equal" >:: (fun _ ->
+        assert_bool "copy !=" (network != Network.copy_net network));
     "to_parameter_list" >:: (fun _ ->
         assert_equal
           (List.init layer_num (fun i ->

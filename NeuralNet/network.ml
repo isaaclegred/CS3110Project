@@ -31,7 +31,7 @@ let add_layer (layer : Layer.t) {input_size; output_size; layers} : pre_net =
 let seal ({input_size; output_size; layers} : pre_net) : net =
   let size =
     match layers with
-    | [] -> failwith "This is impossible!"
+    | [] -> input_size
     | h :: t -> Layer.layer_size h in
   if size <> output_size then
     Invalid_argument "Shapes do not match" |> raise
