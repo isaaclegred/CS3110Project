@@ -40,9 +40,13 @@
      achieve its goal: to accurately predict data.
 
    - IO:
-     To avoid cluttering the folder, the IO module was tested manually.
-     Nevertheless, testing in utop demonstrates that it behaves correctly
-     within its scope. It is, however, possible that IO will not work as
+     Because some aspects of the correctness of the IO module
+     cannot be checked fully automatically (take for example checking if
+     a file has indeed been written to fulfill a specification) we 
+     instead check that parameters can be generated, written and 
+     read correctly, and that data can be read correctly. 
+     Some functions are thus tested implicitly
+     It is, however, possible that IO will not work as
      intended on other OSes, etc; we only managed to test it on Macs.
 
    We believe our testing approach demonstrates the correctness of our system
@@ -100,6 +104,7 @@ let io_tests = [
   cmp_mat_arr "dependent_data test" ([| 1.; 4.; 9. |], 3, 1) (snd data);
   cmp_mats "written and read weights" (fst e_params) (fst r_params);
   cmp_mats "written and read biases" (snd e_params) (snd r_params);
+  cmp_mats "mat_from_list" (Mat.ones 3 1) (mat_from_list [1.;1.;1.] 3)
 ]
 
 (* Layer tests *)
