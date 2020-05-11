@@ -52,17 +52,17 @@ module type Trainer = sig
     | Accept of t
     | Reject of t
 
-  (* [update t] is [Accept t'] if [get_network t'] is at least as good as
-     [get_network t] and is [Reject t'] if [get_network t'] is worse than
-     [get_network t] (where [t'] is [t] after one training step). *)
+  (** [update t] is [Accept t'] if [get_network t'] is at least as good as
+      [get_network t] and is [Reject t'] if [get_network t'] is worse than
+      [get_network t] (where [t'] is [t] after one training step). *)
   val update : t -> update_status
 
-  (* [train t f] is [t] except that the neural net has been trained until
-     its cost on the training data is less than [f]. Note that this function
-     might not terminate. *)
+  (** [train t f] is [t] except that the neural net has been trained until
+      its cost on the training data is less than [f]. Note that this function
+      might not terminate. *)
   val train : t -> float -> t
 
-  (* [get_network t] is the neural net being trained by [t]. *)
+  (** [get_network t] is the neural net being trained by [t]. *)
   val get_network : t -> Network.net
 
 end

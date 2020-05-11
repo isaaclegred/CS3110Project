@@ -16,7 +16,7 @@ test:
 	$(OCAMLBUILD) -tag 'debug' $(TEST) && ./$(TEST) -runner sequential
 
 zip:
-	zip src.zip *.ml* _tags .merlin .ocamlinit Makefile INSTALL.txt
+	zip src.zip *.ml* *.csv _tags .merlin .ocamlinit Makefile INSTALL.txt
 
 docs: docs-public docs-private
 

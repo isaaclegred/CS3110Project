@@ -46,29 +46,29 @@ val run_mat : net -> Owl.Mat.mat -> Owl.Mat.mat
 (** [update weights biases network] is [network] but with weights and biases
     set to [weights] and [biases], respectively.
 
-    Raise: [Invalid_argument] if the shapes don't match. *)
+    Raises: [Invalid_argument] if the shapes don't match. *)
 val update : Owl.Mat.mat array -> Owl.Mat.mat array -> net -> net
 
 (** [incr weights biases network] is [network] but with weights and biases
     increased by [weights] and [biases], respectively.
 
-    Raise: [Invalid_argument] if the shapes don't match. *)
+    Raises: [Invalid_argument] if the shapes don't match. *)
 val incr : Owl.Mat.mat array -> Owl.Mat.mat array -> net -> net
 
 (** [decr weights biases network] is [network] but with weights and biases
     decreased by [weights] and [biases], respectively.
 
-    Raise: [Invalid_argument] if the shapes don't match. *)
+    Raises: [Invalid_argument] if the shapes don't match. *)
 val decr : Owl.Mat.mat array -> Owl.Mat.mat array -> net -> net
 
-(* [pre_net_layers pre_net] are the layers of [pre_net].
+(** [pre_net_layers pre_net] are the layers of [pre_net].
 
-   The layers returned are views. Be careful about direct modifications. *)
+    The layers returned are views. Be careful about direct modifications. *)
 val pre_net_layers : pre_net -> Layer.t array
 
-(* [net_layers network] are the layers of [network].
+(** [net_layers network] are the layers of [network].
 
-   The layers returned are views. Be careful about direct modifications. *)
+    The layers returned are views. Be careful about direct modifications. *)
 val net_layers : net -> Layer.t array
 
 (** [copy_pre_net pre_net] is a (deep) copy of [pre_net]. *)

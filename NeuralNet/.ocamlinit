@@ -10,4 +10,3 @@
 #load_rec "defaultTrainer.cmo";;
 #load_rec "learning.cmo";;
 open Learning;;
-let _ = run_test 8 2 1000 3 0.05 (fun x -> x ** 2.);;
