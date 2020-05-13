@@ -1,0 +1,89 @@
+%%% Local Variables:
+%%% mode: pdftex
+%%% TeX-master: t
+%%% End:
+
+\documentclass{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{palatino}
+\usepackage[inline]{enumitem}
+\usepackage{hyperref}
+\usepackage{xcolor}
+
+\title{MS1 Progress Report}
+\author{Arthur Tanjaya and Isaac Legred}
+
+\begin{document}
+
+\maketitle
+
+\section{Vision}
+\label{sec:vision}
+
+Our vision has mostly been realized in the course of the last sprint, but some details remain that we believe would be interesting to implement.  
+
+We have built software which can
+\begin{itemize}
+  \item Accurately predict future behavior of a system from its past behavior,
+  \item Provide an easy to understand user interface which gives meaningful feedback,
+  \item Be extensible and capable of many different types of input models.
+\end{itemize}
+
+And in the future hope to be able to do statistical inference in some way other than simply examing some loss funtion.
+
+Our system allows for insights into the behavior of single variable functions of time; in some sense our system is optimized for predicting the next observation in a series of observations given, some history of the system.  For simple things: linear functions, polynomials, exponentials this works qquite well.  For more complicated things, it is more difficult to determine what appropriate learning strategies are, but the net can in certain cases make reasonable predictions.  
+\section{Summary of Progress}
+\label{sec:summary}
+
+In this sprint we were able to implement IO fully and implemented multi-layer neural networks.  These strides allow us to input data, build a multi-layer neural network, and then train the network on the data.  This was particulary fun to see work; for our demo we were able to input the last year ofdata of the opening price of AMZN stock and predict the next two days using the net.  It was not perfect in its prediction, of course, but presumably with more knowledge of ML and especially the balance between under and overfitting we could build a net suited to this task.
+
+With regard to the underlying module structure, some adjustments were made to fit improvements in our understanding.  Originally, it was unclear how we would compute the derivative of a large neural network with repsect to its parameters, so the derivative module was left up to the client to implement.  When we managed to implement the derivative layer by layer, it became feasible for this to becomea permanenet fixture in the \texttt{Derivative} module.  Likewise it became apparent there was a canoncial way to train Neural Nets with our setup, so a particulart \texttt{Trainer} was implemented in \texttt{defaultTrainer.ml}.  The other modules maintained similar functionality but with improvements in design and function.    
+\section{Activity Breakdown}
+\label{sec:activity}
+
+\begin{itemize}[leftmargin=2cm]
+
+\item[Arthur]
+	\begin{itemize}
+	
+	\item Restructed module system and improved interfaces 
+	\item Rewrote large scale tests and implemented many unit tests
+	\item Many bug fixes and optimizations
+
+	\end{itemize}
+
+\item[Isaac]
+	\begin{itemize}
+	
+	\item Implemented output functions for parameters
+	\item Wrote a general derivative function for multi-layered nets
+	\item Added adaptive learning rate capactiy
+	
+	\end{itemize}
+
+\end{itemize}
+
+\section{Productivity Analysis}
+\label{sec:productivity}
+
+We were generally very productive, especially compared to our first sprint.  We were generally clearer about implementation, and division of work.  We also spent a lot of time on zoom looking over code and discussing it, which helped in unifying our vision for how the modules would evolve.  Part of improved productivity was certainly better documentation on our code, and more thinking before implementation.  
+
+\section{Scope Grade}
+\label{sec:scope}
+
+We managed to accomplish most of our primary goals, including building a functional,
+multi-layer neural net that is able to predict elementary functions based on input data.
+We also have implemented all the IO functions and can use them to pass data into the module, and
+reading/writing is not a bottleneck.
+Unfortunately we are not able at this time to do statistical analysis of our fits, so this is one place we fell short of excellent scope. 
+
+
+Therefore, since we accomplished basically all of our objectives, we give ourselves a Good/Excellent
+rating.
+
+
+
+
+\end{document}

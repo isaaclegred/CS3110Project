@@ -65,6 +65,7 @@ module type Trainer = sig
   (** [get_network t] is the neural net being trained by [t]. *)
   val get_network : t -> Network.net
 
+  val get_rate : t -> float
 end
 
 (** A [TrainerMaker] is a functor that makes a [Trainer] out of modules

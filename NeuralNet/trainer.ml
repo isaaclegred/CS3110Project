@@ -25,6 +25,7 @@ module type Trainer = sig
   val update : t -> update_status
   val train : t -> float -> t
   val get_network : t -> Network.net
+  val get_rate : t -> float
 end
 
 module type TrainerMaker =
