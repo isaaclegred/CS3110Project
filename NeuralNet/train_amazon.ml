@@ -12,7 +12,7 @@ let extract_independent_data path =
       end
       
 
-let amazon_data = extract_independent_data "amazon_price.csv"
+let amazon_data = extract_independent_data "new_sindata.csv"
 (* Create a net with the usual parameters, and aux_layer sizes the layer sizes
    of the layers you want (a list) which are auxiallry in the sense that they are 
    the hidden layers, the final layer is added automatically. 
@@ -41,7 +41,7 @@ let make_net input_size output_size aux_layer_sizes=
   let layers = Array.init layer_num (fun i ->
       let input_size = if i = 0 then In.size else layer_sizes.(i - 1) in
       Layer.create
-        (Mat.gaussian ~mu:1.0 ~sigma:0.5 layer_sizes.(i) input_size)
+        (Mat.gaussian ~mu:1.0 ~sigma:0.2 layer_sizes.(i) input_size)
         (Mat.zeros input_size 1)
         (List.init input_size (fun _ x -> x))
         (List.init input_size (fun _ _ -> 1.))
@@ -151,24 +151,44 @@ let train_net_to_tol network data start_day tol =
   let module T = DefaultTrainer.Make(In)(Out) in
   let trainer = T.create input_data output_data network |> ref in
   trainer := (T.train !trainer tol); 
-  !trainer
-  |> T.get_network
+  T.get_network !trainer
        
 let run_program mat_data =
   let data = Mat.to_array mat_data in
-  let ins = 10 in
-  let outs = 2 in
+  let ins = 15 in
+  let outs = 5 in
   let net = make_net ins outs [4;5;2] in
   let net_1 = train_net_to_tol net (data) 0 10. in 
   let net_11 = train_net_to_tol net_1 (data) 30 8. in
   let net_2 = train_net_to_tol net_11 (data) 60 8. in
-  let net_3 = train_net_to_tol net_2 (data) 170 20. in
-  let net_4 = train_net_to_tol net_3 (data) 205 20. in
-  let net_41 = train_net_to_tol net_4 (data) 190 20. in
-  let net_5 = train_net_to_tol net_41 (data) 210 20. in
-  let net_6 = train_net_to_tol net_5 (data) 210 8. in
-  let net_7 = train_net_to_tol net_6 (data) 120 8. in
-  let net_8 = train_net_to_tol net_7 (data) 205 8. in
-  let net_9 = train_net_to_tol net_8 (data) 190 8. in
-  let net_10 = train_net_to_tol net_9 (data) 240 2. in
+  let net_3 = train_net_to_tol net_2 (data) 170 2. in
+  let net_4 = train_net_to_tol net_3 (data) 205 3. in
+  let net_41 = train_net_to_tol net_4 (data) 190 1. in
+  let net_5 = train_net_to_tol net_41 (data) 210 1. in
+  let net_6 = train_net_to_tol net_5 (data) 210 25. in
+  let net_7 = train_net_to_tol net_6 (data) 120 25. in
+  let net_8 = train_net_to_tol net_7 (data) 205 4. in
+  let net_9 = train_net_to_tol net_8 (data) 190 3. in
+  let net_10 = train_net_to_tol net_9 (data) 240 0.1 in
+  Network.run net_10 (Array.sub data (252-ins) ins)
+
+
+
+let run_program_iters mat_data =
+  let data = Mat.to_array mat_data in
+  let ins = 15 in
+  let outs = 5 in
+  let net = make_net ins outs [4;5;2] in
+  let net_1 = train_net_on_data net (data) 0 50 in
+  let net_11 = train_net_on_data net_1 (data) 30 28 in
+  let net_2 = train_net_on_data net_11 (data) 60 28 in
+  let net_3 = train_net_on_data net_2 (data) 170 25 in
+  let net_4 = train_net_on_data net_3 (data) 205 20 in
+  let net_41 = train_net_on_data net_4 (data) 190 40 in
+  let net_5 = train_net_on_data net_41 (data) 210 40 in
+  let net_6 = train_net_on_data net_5 (data) 210 55 in
+  let net_7 = train_net_on_data net_6 (data) 220 125 in
+  let net_8 = train_net_on_data net_7 (data) 205 27 in
+  let net_9 = train_net_on_data net_8 (data) 190 25 in
+  let net_10 = train_net_on_data net_9 (data) 240 100 in
   Network.run net_10 (Array.sub data (252-ins) ins)

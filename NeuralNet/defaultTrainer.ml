@@ -14,7 +14,7 @@ module Make (In : Data) (Out : Data) = struct
     rate : float;
   }
 
-  let default_rate : float = 10.**(-9.)(* Arbitrarily chosen *)
+  let default_rate : float = 10.**(-4.)(* Arbitrarily chosen *)
 
   let create (ins : In.t) (outs : Out.t) (network : Network.net) : t =
     let to_mat arr size = arr |> Mat.of_array size 1 |> Mat.transpose in
@@ -40,9 +40,9 @@ module Make (In : Data) (Out : Data) = struct
     let new_network = Network.decr weights biases network in
     let attempt = {input; output; network = new_network; deriv; rate} in
     if cost attempt <= cost t then
-      Accept {input; output; network = new_network; deriv; rate = rate *. 1.1}
+      Accept {input; output; network = new_network; deriv; rate = rate *. 1.7}
     else
-      Reject {input; output; network; deriv; rate = rate *. 0.5}
+      Reject {input; output; network; deriv; rate = rate *. 0.78}
 
   let rec train (trainer : t) (threshold : float) : t =
     if cost trainer < threshold then
